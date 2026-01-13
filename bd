@@ -1,0 +1,247 @@
+CREATE TABLE usuarios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_usuario VARCHAR(100) UNIQUE NOT NULL,
+    contrasena_hash VARCHAR(255) NOT NULL,
+    rol ENUM('admin', 'profesor', 'auxiliar') NOT NULL DEFAULT 'auxiliar',
+    email VARCHAR(255),
+    activo BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_rol (rol),    
+    INDEX idx_activo (activo)
+) ENGINE=InnoDB;
+
+-- ============================================ 
+-- ESTRUCTURA ESCOLAR
+-- ============================================
+
+CREATE TABLE aulas (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nivel ENUM('inicial', 'primaria', 'secundaria') NOT NULL,
+    grado VARCHAR(50), -- NULL para inicial, '1ro', '2do', etc para primaria/secundaria
+    seccion VARCHAR(10), -- 'A', 'B', NULL para inicial
+    nombre_personalizado VARCHAR(100), -- 'Abejitas', 'Ositos', etc para inicial
+    capacidad INT DEFAULT 30,
+    activa BOOLEAN DEFAULT TRUE,
+    
+    INDEX idx_nivel (nivel),
+    INDEX idx_nivel_grado_seccion (nivel, grado, seccion)
+) ENGINE=InnoDB;
+
+CREATE TABLE estudiantes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    aula_id INT,
+    nombre VARCHAR(200) NOT NULL,
+    apellido VARCHAR(200) NOT NULL,
+    dni VARCHAR(20) UNIQUE,
+    fecha_nacimiento DATE,
+    direccion TEXT,
+    telefono VARCHAR(20),
+    email VARCHAR(255),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_ingreso DATE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
+    INDEX idx_aula_id (aula_id),
+    INDEX idx_dni (dni),
+    INDEX idx_activo (activo),
+    INDEX idx_nombre_apellido (apellido, nombre)
+) ENGINE=InnoDB;
+
+CREATE TABLE padres (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(200) NOT NULL,
+    apellido VARCHAR(200) NOT NULL,
+    dni VARCHAR(20) UNIQUE,
+    telefono VARCHAR(20),
+    email VARCHAR(255),
+    direccion TEXT,
+    tipo_relacion ENUM('padre', 'madre', 'tutor', 'apoderado') NOT NULL,
+    detalle_relacion VARCHAR(100), -- 'tío', 'abuela', 'amigo familia', etc (solo si es tutor/apoderado)
+    activo BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_dni (dni),
+    INDEX idx_telefono (telefono),
+    INDEX idx_tipo_relacion (tipo_relacion),
+    INDEX idx_apellido (apellido)
+) ENGINE=InnoDB;
+
+-- Relación estudiante-padre (un estudiante puede tener varios padres/tutores)
+CREATE TABLE estudiante_padre (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    estudiante_id INT NOT NULL,
+    padre_id INT NOT NULL,
+    es_contacto_principal BOOLEAN DEFAULT FALSE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+    FOREIGN KEY (padre_id) REFERENCES padres(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_estudiante_padre (estudiante_id, padre_id),
+    INDEX idx_estudiante (estudiante_id),
+    INDEX idx_padre (padre_id)
+) ENGINE=InnoDB;
+
+-- ============================================
+-- MATERIALES
+-- ============================================
+
+CREATE TABLE materiales (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(200) NOT NULL,
+    tipo ENUM('trabajo', 'aseo') NOT NULL,
+    categoria VARCHAR(100), -- 'escritura', 'geometría', 'arte' para trabajo / 'limpieza', 'higiene' para aseo
+    cantidad_total INT DEFAULT 0,
+    unidad_medida VARCHAR(50) DEFAULT 'unidad', -- 'unidad', 'paquete', 'litro', 'caja'
+    activo BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_tipo (tipo),
+    INDEX idx_categoria (categoria),
+    INDEX idx_activo (activo)
+) ENGINE=InnoDB;
+
+-- Materiales asignados a las aulas
+CREATE TABLE materiales_aula (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    material_id INT NOT NULL,
+    aula_id INT NOT NULL,
+    cantidad_asignada INT NOT NULL,
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    
+    FOREIGN KEY (material_id) REFERENCES materiales(id) ON DELETE CASCADE,
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE CASCADE,
+    INDEX idx_material (material_id),
+    INDEX idx_aula (aula_id),
+    UNIQUE KEY uk_material_aula (material_id, aula_id)
+) ENGINE=InnoDB;
+
+-- Materiales asignados a los estudiantes (solo materiales de trabajo)
+CREATE TABLE materiales_estudiante (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    material_id INT NOT NULL,
+    estudiante_id INT NOT NULL,
+    cantidad_asignada INT NOT NULL,
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('asignado', 'devuelto', 'perdido') DEFAULT 'asignado',
+    observaciones TEXT,
+    
+    FOREIGN KEY (material_id) REFERENCES materiales(id) ON DELETE CASCADE,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+    INDEX idx_material (material_id),
+    INDEX idx_estudiante (estudiante_id),
+    INDEX idx_estado (estado),
+    INDEX idx_fecha (fecha_asignacion)
+) ENGINE=InnoDB;
+
+-- ============================================
+-- PRÉSTAMOS (materiales extras o temporales)
+-- ============================================
+
+CREATE TABLE prestamos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    material_id INT NOT NULL,
+    estudiante_id INT NULL,
+    aula_id INT NULL,
+    cantidad INT NOT NULL,
+    fecha_prestamo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_devolucion TIMESTAMP NULL,
+    estado ENUM('activo', 'devuelto', 'perdido') DEFAULT 'activo',
+    observaciones TEXT,
+    usuario_registro_id INT,
+    
+    FOREIGN KEY (material_id) REFERENCES materiales(id) ON DELETE CASCADE,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_registro_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_material (material_id),
+    INDEX idx_estudiante (estudiante_id),
+    INDEX idx_aula (aula_id),
+    INDEX idx_estado (estado),
+    INDEX idx_fecha_prestamo (fecha_prestamo),
+    
+    CONSTRAINT chk_prestamo_destino CHECK (
+        (estudiante_id IS NOT NULL AND aula_id IS NULL) OR 
+        (estudiante_id IS NULL AND aula_id IS NOT NULL)
+    )
+) ENGINE=InnoDB;
+
+-- ============================================
+-- MATRÍCULAS
+-- ============================================
+
+CREATE TABLE matriculas (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    estudiante_id INT NOT NULL,
+    aula_id INT NOT NULL,
+    padre_responsable_id INT NOT NULL,
+    fecha_matricula DATE NOT NULL,
+    estado ENUM('activa', 'retirado', 'trasladado') DEFAULT 'activa',
+    monto DECIMAL(10,2),
+    metodo_pago VARCHAR(50),
+    observaciones TEXT,
+    usuario_registro_id INT,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE CASCADE,
+    FOREIGN KEY (padre_responsable_id) REFERENCES padres(id) ON DELETE RESTRICT,
+    FOREIGN KEY (usuario_registro_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_estudiante (estudiante_id),
+    INDEX idx_aula (aula_id),
+    INDEX idx_padre (padre_responsable_id),
+    INDEX idx_estado (estado),
+    INDEX idx_fecha (fecha_matricula)
+) ENGINE=InnoDB;
+
+-- ============================================
+-- DATOS DE EJEMPLO
+-- ============================================
+
+-- Usuarios
+INSERT INTO usuarios (nombre_usuario, contrasena_hash, rol, email) VALUES
+('admin', '$2y$10$ejemplo_hash', 'admin', 'admin@escuela.com'),
+('prof_maria', '$2y$10$ejemplo_hash', 'profesor', 'maria@escuela.com'),
+('aux_juan', '$2y$10$ejemplo_hash', 'auxiliar', 'juan@escuela.com');
+
+-- Aulas Inicial
+INSERT INTO aulas (nivel, grado, seccion, nombre_personalizado, capacidad) VALUES
+('inicial', NULL, NULL, 'Abejitas', 20),
+('inicial', NULL, NULL, 'Ositos', 20),
+('inicial', NULL, NULL, 'Conejitos', 20);
+
+-- Aulas Primaria
+INSERT INTO aulas (nivel, grado, seccion, nombre_personalizado, capacidad) VALUES
+('primaria', '1ro', 'A', NULL, 30),
+('primaria', '1ro', 'B', NULL, 30),
+('primaria', '2do', 'A', NULL, 30),
+('primaria', '3ro', 'A', NULL, 30);
+
+-- Aulas Secundaria
+INSERT INTO aulas (nivel, grado, seccion, nombre_personalizado, capacidad) VALUES
+('secundaria', '1ro', 'A', NULL, 35),
+('secundaria', '2do', 'A', NULL, 35);
+
+-- Materiales de Trabajo
+INSERT INTO materiales (nombre, tipo, categoria, cantidad_total, unidad_medida) VALUES
+('Lápiz HB', 'trabajo', 'escritura', 500, 'unidad'),
+('Borrador', 'trabajo', 'escritura', 300, 'unidad'),
+('Cuaderno 100 hojas', 'trabajo', 'escritura', 200, 'unidad'),
+('Regla 30cm', 'trabajo', 'geometría', 150, 'unidad'),
+('Tijera punta roma', 'trabajo', 'arte', 100, 'unidad'),
+('Colores x12', 'trabajo', 'arte', 80, 'caja'),
+('Témperas x6', 'trabajo', 'arte', 60, 'caja');
+
+-- Materiales de Aseo
+INSERT INTO materiales (nombre, tipo, categoria, cantidad_total, unidad_medida) VALUES
+('Jabón líquido', 'aseo', 'higiene', 50, 'litro'),
+('Papel higiénico', 'aseo', 'higiene', 200, 'rollo'),
+('Escoba', 'aseo', 'limpieza', 30, 'unidad'),
+('Trapeador', 'aseo', 'limpieza', 30, 'unidad'),
+('Desinfectante', 'aseo', 'limpieza', 40, 'litro'),
+('Detergente', 'aseo', 'limpieza', 30, 'kilo'),
+('Papel toalla', 'aseo', 'higiene', 100, 'rollo');

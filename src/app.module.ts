@@ -6,6 +6,10 @@ import { AulasModule } from './modules/aulas/aulas.module';
 import { UsersModule } from './modules/users/users.module';
 import { MaterialesModule } from './modules/materiales/materiales.module';
 import { EstudiantesModule } from './modules/estudiantes/estudiantes.module';
+import { PadresModule } from './modules/padres/padres.module';
+import { PrestamosModule } from './modules/prestamos/prestamos.module';
+import { MatriculasModule } from './modules/matriculas/matriculas.module';
+import { ApiPeruModule } from './common/api-peru/api-peru.module';
 
 @Module({
   imports: [
@@ -21,16 +25,15 @@ import { EstudiantesModule } from './modules/estudiantes/estudiantes.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
-
     AuthModule,
-
     AulasModule,
-
     UsersModule,
-
     MaterialesModule,
-
     EstudiantesModule,
+    PadresModule,
+    PrestamosModule,
+    MatriculasModule,
+    ApiPeruModule,
   ],
   controllers: [],
   providers: [],
