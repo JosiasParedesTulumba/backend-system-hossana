@@ -5,10 +5,11 @@ import { UpdateAulaDto } from './dto/update-aula.dto';
 
 @Controller('aulas')
 export class AulasController {
+  
   constructor(private readonly aulasService: AulasService) {}
 
   @Post()
-  create(@Body() createAulaDto: CreateAulaDto) {
+  async create(@Body() createAulaDto: CreateAulaDto) {
     return this.aulasService.create(createAulaDto);
   }
 

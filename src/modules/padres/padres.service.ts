@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePadreDto } from './dto/create-padre.dto';
 import { UpdatePadreDto } from './dto/update-padre.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Padre } from './entities/padre.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PadresService {
-  create(createPadreDto: CreatePadreDto) {
-    return 'This action adds a new padre';
+
+  constructor(
+    @InjectRepository(Padre)
+    private readonly padreRepository: Repository<Padre>
+  ){}
+
+  async create(createPadreDto: CreatePadreDto) {
+    const newPadre = this.padreRepository.create(createPadreDto);
+    await this.padreRepository.save(newPadre);
   }
 
-  findAll() {
-    return `This action returns all padres`;
+  async findAll() {
+    await this.padreRepository.find();
   }
 
   findOne(id: number) {

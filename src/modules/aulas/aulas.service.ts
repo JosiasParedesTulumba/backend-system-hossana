@@ -1,15 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAulaDto } from './dto/create-aula.dto';
 import { UpdateAulaDto } from './dto/update-aula.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Aula } from './entities/aula.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AulasService {
-  create(createAulaDto: CreateAulaDto) {
-    return 'This action adds a new aula';
+
+  constructor(
+    @InjectRepository(Aula)
+    private readonly aulaRepository: Repository<Aula>   
+  ){}
+
+  async create(createAulaDto: CreateAulaDto) {
+    try {
+      const newAula = this.aulaRepository.create(createAulaDto);
+      await this.aulaRepository.save(newAula);
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all aulas`;
+  async findAll() {
+    await this.aulaRepository.find();
   }
 
   findOne(id: number) {

@@ -13,7 +13,9 @@ import { ApiPeruModule } from './common/api-peru/api-peru.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
 
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -24,6 +26,7 @@ import { ApiPeruModule } from './common/api-peru/api-peru.module';
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
       synchronize: true,
+      logging: true
     }),
     AuthModule,
     AulasModule,
@@ -38,4 +41,4 @@ import { ApiPeruModule } from './common/api-peru/api-peru.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

@@ -17,9 +17,8 @@ export class PadresController {
     return this.apiPeruService.getPersonByDni(dni);
   }
 
-
   @Post()
-  create(@Body() createPadreDto: CreatePadreDto) {
+  async create(@Body() createPadreDto: CreatePadreDto) {
     return this.padresService.create(createPadreDto);
   }
 

@@ -21,7 +21,18 @@ export class Material {
     tipo: MaterialTipo;
     
     @Column({ type: 'varchar' })
-    cantidad: string;
+    cantidad_total: string;
+
+    @Column({
+        type: 'varchar'
+    })
+    categoria: string;
+
+    @Column({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP'  
+    })
+    creado_en: Date;
 
     @OneToMany(() => MaterialAula, materialAula => materialAula.material)
     material_aulas: MaterialAula[];
