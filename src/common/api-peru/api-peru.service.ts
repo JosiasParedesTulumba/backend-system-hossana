@@ -52,6 +52,7 @@ export class ApiPeruService {
                 apellidoPaterno: personaData.apellido_paterno,
                 apellidoMaterno: personaData.apellido_materno,
                 nombreCompleto: personaData.nombre_completo,
+                codigo_verificacion: personaData.codigo_verificacion,
             };
         } catch (error) {
             this.logger.error(`Error consultando DNI ${dni}:`, error.message);

@@ -4,4 +4,5 @@ export class DniResponseDto {
     apellidoPaterno: string;
     apellidoMaterno: string;
     nombreCompleto: string;
+    codigo_verificacion: string;
 }

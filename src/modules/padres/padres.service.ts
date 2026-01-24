@@ -11,15 +11,15 @@ export class PadresService {
   constructor(
     @InjectRepository(Padre)
     private readonly padreRepository: Repository<Padre>
-  ){}
+  ) { }
 
   async create(createPadreDto: CreatePadreDto) {
     const newPadre = this.padreRepository.create(createPadreDto);
-    await this.padreRepository.save(newPadre);
+    return this.padreRepository.save(newPadre);
   }
 
   async findAll() {
-    await this.padreRepository.find();
+    return this.padreRepository.find();
   }
 
   findOne(id: number) {

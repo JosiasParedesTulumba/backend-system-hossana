@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TipoRelacion } from "../constants/tipo-relacion.enum";
-import { EstudiantePadre } from "src/modules/estudiantes/entities/estudiante-padre.entity";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
 
 @Entity('padres')
@@ -56,9 +55,16 @@ export class Padre {
     @Column({ type: 'varchar', length: 100, nullable: true })
     detalles_relacion: string;
 
-    @OneToMany(() => EstudiantePadre, estudiantePadre => estudiantePadre.padre)
-    estudiante_padre: EstudiantePadre[];
+    @OneToMany(() => Matricula, (matricula) => matricula.padre)
+    matriculas_como_padre: Matricula[];
 
-    @OneToMany(() => Matricula, matricula => matricula.padre_responsable)
-    matricula: Matricula[];
+    @OneToMany(() => Matricula, (matricula) => matricula.madre)
+    matriculas_como_madre: Matricula[];
+
+    @OneToMany(() => Matricula, (matricula) => matricula.tutor)
+    matriculas_como_tutor: Matricula[];
+
+    @OneToMany(() => Matricula, (matricula) => matricula.padre_responsable)
+    matriculas_como_responsable: Matricula[];
+
 }

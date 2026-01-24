@@ -1,8 +1,8 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { EstudiantePadre } from "./estudiante-padre.entity";
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MaterialEstudiante } from "src/modules/materiales/entities/material-estudiante.entity";
 import { Prestamo } from "src/modules/prestamos/entities/prestamo.entity";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
+import { InformacionMedica } from "src/modules/informacion-medica/entities/informacion-medica.entity";
 
 @Entity('estudiantes')
 export class Estudiante {
@@ -10,24 +10,24 @@ export class Estudiante {
     @PrimaryGeneratedColumn()
     estudiante_id: number;
 
-    @Column({ 
-        type: 'varchar', 
+    @Column({
+        type: 'varchar',
         length: 200,
         nullable: false
     })
     nombre: string;
 
-    @Column({ 
-        type: 'varchar', 
+    @Column({
+        type: 'varchar',
         length: 200,
         nullable: false
     })
     apellido: string;
 
-    @Column({ 
-        type: 'varchar', 
-        length: 20, 
-        unique: true    
+    @Column({
+        type: 'varchar',
+        length: 20,
+        unique: true
     })
     dni: string;
 
@@ -37,8 +37,8 @@ export class Estudiante {
     @Column({ type: 'text' })
     direccion: string;
 
-    @Column({ 
-        type: 'varchar', 
+    @Column({
+        type: 'varchar',
         length: 20,
         nullable: false
     })
@@ -46,9 +46,6 @@ export class Estudiante {
 
     @Column({ type: 'varchar', length: 100 })
     email: string;
-
-    @OneToMany(() => EstudiantePadre, estudiantePadre => estudiantePadre.estudiante)
-    estudiante_padres: EstudiantePadre[];
 
     @OneToMany(() => MaterialEstudiante, materialEstudiante => materialEstudiante.estudiante)
     material_estudiantes: MaterialEstudiante[];
@@ -58,4 +55,7 @@ export class Estudiante {
 
     @OneToMany(() => Matricula, matricula => matricula.estudiante)
     matricula: Matricula[];
+
+    @OneToOne(() => InformacionMedica, informacionMedica => informacionMedica.estudiante)
+    informacion_medica: InformacionMedica[];
 }
