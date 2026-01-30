@@ -1,4 +1,6 @@
 import { IsDate, IsString } from "class-validator";
+import { Genero } from "../constants/genero.enum";
+import { Estado } from "../constants/estado.enum";
 
 export class CreateEstudianteDto {
     @IsString({ message: 'El DNI debe ser una cadena de texto' })
@@ -14,11 +16,11 @@ export class CreateEstudianteDto {
     apellido_materno: string;
 
     @IsString({ message: 'El género debe ser una cadena de texto' })
-    genero: string;
+    genero: Genero;
 
     @IsDate({ message: 'La fecha de nacimiento debe ser una fecha válida' })
     fecha_nacimiento: Date;
 
     @IsString({ message: 'El estado debe ser una cadena de texto (Activo o Inactivo)' })
-    estado: string;
+    estado: Estado;
 }

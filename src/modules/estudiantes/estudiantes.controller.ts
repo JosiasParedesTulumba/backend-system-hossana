@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/
 import { EstudiantesService } from './estudiantes.service';
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
+import { Estado } from './constants/estado.enum';
 
 @Controller('estudiantes')
 export class EstudiantesController {
@@ -28,7 +29,7 @@ export class EstudiantesController {
   @Put('estado/:id')
   cambiarEstado(
     @Param('id') id: string,
-    @Body('estado') estado: string,
+    @Body('estado') estado: Estado,
   ) {
     return this.estudiantesService.cambiarEstado(+id, estado);
   }

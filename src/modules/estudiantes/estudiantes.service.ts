@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Estudiante } from './entities/estudiante.entity';
 import { Repository } from 'typeorm';
 import { error } from 'console';
+import { Estado } from './constants/estado.enum';
 
 @Injectable()
 export class EstudiantesService {
@@ -31,7 +32,7 @@ export class EstudiantesService {
 
   //Obtener activos
   async findActivos(): Promise<Estudiante[]> {
-    return await this.estudianteRepository.find({ where: { estado: 'Activo' } })
+    return await this.estudianteRepository.find({ where: { estado: Estado.ACTIVO } })
   }
 
   //Actualizar un estudiante
@@ -43,7 +44,7 @@ export class EstudiantesService {
   }
 
   //Cambiar estado
-  async cambiarEstado(id: number, estado: string): Promise<Estudiante> {
+  async cambiarEstado(id: number, estado: Estado): Promise<Estudiante> {
     const estudiante = await this.estudianteRepository.findOne({ where: { estudiante_id: id } })
     if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
     estudiante.estado = estado;

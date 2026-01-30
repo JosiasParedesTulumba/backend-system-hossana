@@ -30,11 +30,11 @@ export class Aula {
     })
     seccion:string;
 
-    @Column({
-        type: 'varchar',
-        length: 100,
-    })
-    nombre_personalizado:string;
+    // @Column({
+    //     type: 'varchar',
+    //     length: 100,
+    // })
+    // nombre_personalizado:string;
 
     @OneToMany(() => MaterialAula, materialAula => materialAula.aula)
     material_aulas:MaterialAula[];

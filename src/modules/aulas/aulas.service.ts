@@ -10,20 +10,20 @@ export class AulasService {
 
   constructor(
     @InjectRepository(Aula)
-    private readonly aulaRepository: Repository<Aula>   
-  ){}
+    private readonly aulaRepository: Repository<Aula>
+  ) { }
 
-  async create(createAulaDto: CreateAulaDto) {
-    try {
-      const newAula = this.aulaRepository.create(createAulaDto);
-      await this.aulaRepository.save(newAula);
-    } catch (error) {
-      console.log(error)
-    }
+  async create(createAulaDto: CreateAulaDto): Promise<Aula> {
+    const newAula = this.aulaRepository.create(createAulaDto);
+    return await this.aulaRepository.save(newAula);
   }
 
-  async findAll() {
-    await this.aulaRepository.find();
+  async findAll(): Promise<Aula[]> {
+    return await this.aulaRepository.find({
+      order: {
+        aula_id: 'DESC'
+      }
+    });
   }
 
   findOne(id: number) {

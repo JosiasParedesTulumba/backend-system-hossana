@@ -3,6 +3,8 @@ import { EstudiantePadre } from "./estudiante-padre.entity";
 import { MaterialEstudiante } from "src/modules/materiales/entities/material-estudiante.entity";
 import { Prestamo } from "src/modules/prestamos/entities/prestamo.entity";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
+import { Genero } from "../constants/genero.enum";
+import { Estado } from "../constants/estado.enum";
 
 @Entity('estudiantes')
 export class Estudiante {
@@ -40,20 +42,22 @@ export class Estudiante {
 
     @Column({ 
         type: 'enum', 
-        enum: ['Masculino', 'Femenino'],
+        enum: Genero,
+        enumName: 'Genero',
         nullable: false
     })
-    genero: string;
+    genero: Genero;
 
     @Column({ name: 'fecha_nacimiento', type: 'date' })
     fecha_nacimiento: Date;
 
     @Column({ 
         type: 'enum', 
-        enum: ['Activo', 'Inactivo'],
+        enum: Estado,
+        enumName: 'Estado',
         nullable: false
     })
-    estado: string;
+    estado: Estado;
 
     
     // @Column({ type: 'text' })
