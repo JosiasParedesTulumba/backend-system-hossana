@@ -6,6 +6,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  app.enableCors(); // para la comunicacion con Angular
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
