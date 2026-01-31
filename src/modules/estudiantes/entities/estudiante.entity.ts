@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MaterialEstudiante } from "src/modules/materiales/entities/material-estudiante.entity";
 import { Prestamo } from "src/modules/prestamos/entities/prestamo.entity";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
@@ -46,6 +46,9 @@ export class Estudiante {
 
     @Column({ type: 'varchar', length: 100 })
     email: string;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
 
     @OneToMany(() => MaterialEstudiante, materialEstudiante => materialEstudiante.estudiante)
     material_estudiantes: MaterialEstudiante[];

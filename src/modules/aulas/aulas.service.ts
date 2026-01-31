@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateAulaDto } from './dto/create-aula.dto';
 import { UpdateAulaDto } from './dto/update-aula.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,15 +10,16 @@ export class AulasService {
 
   constructor(
     @InjectRepository(Aula)
-    private readonly aulaRepository: Repository<Aula>   
-  ){}
+    private readonly aulaRepository: Repository<Aula>
+  ) { }
 
-  async create(createAulaDto: CreateAulaDto) {
+  async create(createAulaDto: CreateAulaDto): Promise<Aula> {
     try {
       const newAula = this.aulaRepository.create(createAulaDto);
-      await this.aulaRepository.save(newAula);
+      return await this.aulaRepository.save(newAula);
     } catch (error) {
-      console.log(error)
+      console.log(error);
+      throw new InternalServerErrorException('Error al crear el aula');
     }
   }
 
@@ -26,12 +27,31 @@ export class AulasService {
     await this.aulaRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} aula`;
+  async findOne(aula_id: number): Promise<Aula> {
+    const aula = await this.aulaRepository.findOneBy({ aula_id });
+
+    if (!aula) {
+      throw new NotFoundException('Aula no encontrada ');
+    }
+
+    return aula;
   }
 
-  update(id: number, updateAulaDto: UpdateAulaDto) {
-    return `This action updates a #${id} aula`;
+  async update(aula_id: number, updateAulaDto: UpdateAulaDto): Promise<Aula> {
+    const aula = await this.aulaRepository.findOne({
+      where: { aula_id },
+    });
+
+    if (!aula) {
+      throw new NotFoundException('No se encontro el aula');
+    }
+
+    const updateAula = this.aulaRepository.merge(
+      aula, 
+      updateAulaDto
+    );
+
+    return await this.aulaRepository.save(updateAula);
   }
 
   remove(id: number) {
