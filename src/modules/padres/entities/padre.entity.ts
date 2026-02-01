@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TipoRelacion } from "../constants/tipo-relacion.enum";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
 
@@ -32,7 +32,7 @@ export class Padre {
     @Column({
         type: 'varchar',
         length: 100,
-        nullable: false,    
+        nullable: false,  
     })
     telefono: string;
 
@@ -51,6 +51,9 @@ export class Padre {
         enumName: 'tipo_relacion_enum',
     })
     tipo_relacion: TipoRelacion;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
 
     @Column({ type: 'varchar', length: 100, nullable: true })
     detalles_relacion: string;

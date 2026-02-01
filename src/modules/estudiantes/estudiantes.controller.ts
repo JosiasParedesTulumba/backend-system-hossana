@@ -6,30 +6,30 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('estudiantes')
 export class EstudiantesController {
-  constructor(private readonly estudiantesService: EstudiantesService) {}
+  constructor(private readonly estudiantesService: EstudiantesService) { }
 
   @Post()
-  create(@Body() createEstudianteDto: CreateEstudianteDto) {
+  async create(@Body() createEstudianteDto: CreateEstudianteDto) {
     return this.estudiantesService.create(createEstudianteDto);
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
+  async findAll(@Query() paginationDto: PaginationDto) {
     return this.estudiantesService.findAll(paginationDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: number) {
     return this.estudiantesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateEstudianteDto: UpdateEstudianteDto) {
-    return this.estudiantesService.update( id,updateEstudianteDto);
+  async update(@Param('id') id: number, @Body() updateEstudianteDto: UpdateEstudianteDto) {
+    return this.estudiantesService.update(id, updateEstudianteDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  async remove(@Param('id') id: number) {
     return this.estudiantesService.softDelete(id);
   }
 }
