@@ -4,7 +4,6 @@ import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Estudiante } from './entities/estudiante.entity';
 import { Repository } from 'typeorm';
-import { error } from 'console';
 import { Estado } from './constants/estado.enum';
 
 @Injectable()
@@ -49,6 +48,19 @@ export class EstudiantesService {
     if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
     estudiante.estado = estado;
     return await this.estudianteRepository.save(estudiante)
+  }
+
+  //buscar con dni
+  async findByDni(dni: string): Promise<Estudiante> {
+    const estudiante = await this.estudianteRepository.findOne({
+      where: { dni }
+    });
+
+    if (!estudiante) {
+      throw new NotFoundException('Estudiante no encontrado');
+    }
+
+    return estudiante;
   }
 
   // Obtener un estudiante por ID

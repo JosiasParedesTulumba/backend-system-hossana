@@ -7,7 +7,7 @@ import { Genero } from "../constants/genero.enum";
 import { Estado } from "../constants/estado.enum";
 
 @Entity('estudiantes')
-export class Estudiante {
+export class Estudiante { 
 
     @PrimaryGeneratedColumn()
     estudiante_id: number;
@@ -49,13 +49,13 @@ export class Estudiante {
     genero: Genero;
 
     @Column({ name: 'fecha_nacimiento', type: 'date' })
-    fecha_nacimiento: Date;
+    fecha_nacimiento: string;
 
     @Column({ 
         type: 'enum', 
         enum: Estado,
         enumName: 'Estado',
-        nullable: false
+        default: Estado.ACTIVO
     })
     estado: Estado;
 

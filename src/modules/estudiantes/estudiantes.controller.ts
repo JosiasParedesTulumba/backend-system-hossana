@@ -18,7 +18,7 @@ export class EstudiantesController {
     return this.estudiantesService.findAll();
   }
 
-  @Put(':id')
+  @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateEstudianteDto: UpdateEstudianteDto,
@@ -34,11 +34,15 @@ export class EstudiantesController {
     return this.estudiantesService.cambiarEstado(+id, estado);
   }
 
+  // @Get('dni/:dni')
+  // findByDni(@Param('dni') dni: string) {
+  //   return this.estudiantesService.findByDni(dni);
+  // }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.estudiantesService.findOne(+id);
   }
-
 
 
   // @Patch(':id')
