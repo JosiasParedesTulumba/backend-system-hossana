@@ -24,52 +24,6 @@ export class MatriculasService {
 
   ) { }
 
-  // Crear una nueva matrícula
-  async create(createMatriculaDto: CreateMatriculaDto): Promise<Matricula> {
-
-    const { estudiante_id, aula_id, padre_id, ...datosMatricula } = createMatriculaDto;
-    const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
-    if (!estudiante) {
-      throw new NotFoundException('Estudiante no encontrado');
-    }
-    const aula = await this.aulaRepository.findOneBy({ aula_id });
-    if (!aula) {
-      throw new NotFoundException('Aula no encontrada');
-    }
-
-    const padre = await this.padreRepository.findOneBy({ padre_id });
-    if (!padre) {
-      throw new NotFoundException('Padre responsable no encontrado');
-    }
-
-    const codigo_matricula = await this.generarCodigoMatricula();
-
-    const nuevaMatricula = this.matriculaRepository.create({
-      ...datosMatricula,
-      codigo_matricula,
-      estudiante,
-      aula,
-      padre_responsable: padre,
-    });
-    
-    return await this.matriculaRepository.save(nuevaMatricula);
-  }
-
-  private async generarCodigoMatricula(): Promise<string> {
-    const year = new Date().getFullYear();
-
-    const total = await this.matriculaRepository.count({
-      where: {
-        codigo_matricula: Like(`MAT-${year}-%`)
-      }
-    });
-
-    const correlativo = (total + 1).toString().padStart(4, '0');
-
-    return `MAT-${year}-${correlativo}`;
-  }
-
-
   // Obtener todas las matrículas
   async findAll(): Promise<Matricula[]> {
     return await this.matriculaRepository.find({
@@ -84,6 +38,7 @@ export class MatriculasService {
     });
   }
 
+
   //Obtener matriculas activas
   async findActivos(): Promise<Matricula[]> {
     return await this.matriculaRepository.find
@@ -97,13 +52,97 @@ export class MatriculasService {
       })
   }
 
-  //Actualizar una matricula
-  async update(id: number, updateMatriculaDto: UpdateMatriculaDto): Promise<Matricula> {
-    const matricula = await this.matriculaRepository.findOne({ where: { matricula_id: id } });
-    if (!matricula) throw new Error('Matrícula no encontrada');
-    Object.assign(matricula, updateMatriculaDto);
-    return await this.matriculaRepository.save(matricula)
+  // Crear una nueva matrícula
+  async create(createMatriculaDto: CreateMatriculaDto): Promise<Matricula> {
+
+    const { estudiante_id, aula_id, padre_responsable_id, ...datosMatricula } = createMatriculaDto;
+    const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
+    if (!estudiante) {
+      throw new NotFoundException('Estudiante no encontrado');
+    }
+    const aula = await this.aulaRepository.findOneBy({ aula_id });
+    if (!aula) {
+      throw new NotFoundException('Aula no encontrada');
+    }
+
+    const padre = await this.padreRepository.findOneBy({ padre_id: padre_responsable_id });
+    if (!padre) {
+      throw new NotFoundException('Padre responsable no encontrado');
+    }
+
+    const codigo_matricula = await this.generarCodigoMatricula();
+
+    const nuevaMatricula = this.matriculaRepository.create({
+      ...datosMatricula,
+      codigo_matricula,
+      estudiante,
+      aula,
+      padre_responsable: padre,
+    });
+
+    return await this.matriculaRepository.save(nuevaMatricula);
   }
+
+  private async generarCodigoMatricula(): Promise<string> {
+    const year = new Date().getFullYear();
+    console.log('Año actual backend:', year);
+
+    const total = await this.matriculaRepository.count({
+      where: {
+        codigo_matricula: Like(`MAT-${year}-%`)
+      }
+    });
+
+    const correlativo = (total + 1).toString().padStart(4, '0');
+
+    return `MAT-${year}-${correlativo}`;
+  }
+
+  //Actualizar una matricula
+  async update(
+    id: number,
+    updateMatriculaDto: UpdateMatriculaDto
+  ): Promise<Matricula> {
+
+    const matricula = await this.matriculaRepository.findOne({
+      where: { matricula_id: id },
+      relations: ['estudiante', 'aula', 'padre_responsable'],
+    });
+
+    if (!matricula) {
+      throw new NotFoundException('Matrícula no encontrada');
+    }
+
+    const {
+      estudiante_id,
+      aula_id,
+      padre_responsable_id,
+      ...datosMatricula
+    } = updateMatriculaDto;
+
+    Object.assign(matricula, datosMatricula);
+    
+    if (estudiante_id) {
+      const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
+      if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
+      matricula.estudiante = estudiante;
+    }
+
+    if (aula_id) {
+      const aula = await this.aulaRepository.findOneBy({ aula_id });
+      if (!aula) throw new NotFoundException('Aula no encontrada');
+      matricula.aula = aula;
+    }
+
+    if (padre_responsable_id) {
+      const padre = await this.padreRepository.findOneBy({ padre_id: padre_responsable_id });
+      if (!padre) throw new NotFoundException('Padre responsable no encontrado');
+      matricula.padre_responsable = padre;
+    }
+
+    return await this.matriculaRepository.save(matricula);
+  }
+
 
   //Obtener una matricula por id
   async findOne(id: number): Promise<Matricula> {

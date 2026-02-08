@@ -12,7 +12,9 @@ export class AuthService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly jwtService: JwtService,
-    ) { }
+    ) { 
+        // this.generarHash();
+    }
 
     async login(loginDto: LoginDto) {
         const { username, password } = loginDto;
@@ -27,6 +29,11 @@ export class AuthService {
 
         // Comparar contraseña
         const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        console.log('Password ingresado:', password);
+        console.log('Password en BD:', user.password);
+        console.log('Resultado bcrypt:', isPasswordValid);
+
 
         if (!isPasswordValid) {
             throw new UnauthorizedException('Credenciales inválidas');
@@ -44,6 +51,7 @@ export class AuthService {
                 email: user.email,
             },
         };
+
     }
 
     async validateUser(user_id: number): Promise<User> {
@@ -57,4 +65,10 @@ export class AuthService {
 
         return user;
     }
+
+    // async generarHash() {
+    //     const hash = await bcrypt.hash('1234', 10);
+    //     console.log('HASH:', hash);
+    // }
+
 }

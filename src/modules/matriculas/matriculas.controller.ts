@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { MatriculasService } from './matriculas.service';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { UpdateMatriculaDto } from './dto/update-matricula.dto';
 import { EstadoMatricula } from './constants/estado-matricula.enum';
 import { EstudiantesService } from '../estudiantes/estudiantes.service';
+import { PadresService } from '../padres/padres.service';
+import { AulasService } from '../aulas/aulas.service';
+import { NivelEducativo } from '../aulas/constants/nivel-educativo.enum';
 
 @Controller('matriculas')
 export class MatriculasController {
   constructor(
     private readonly matriculasService: MatriculasService,
-    private readonly estudiantesService: EstudiantesService
+    private readonly estudiantesService: EstudiantesService,
+    private readonly padreService: PadresService,
+    private readonly aulasService: AulasService,
   ) { }
 
   @Post()
@@ -20,6 +25,19 @@ export class MatriculasController {
   @Get()
   findAll() {
     return this.matriculasService.findAll();
+  }
+
+  @Get('buscar')
+  findByNivelGradoSeccion(
+    @Query('nivel') nivel: NivelEducativo,
+    @Query('grado') grado: string,
+    @Query('seccion') seccion: string
+  ) {
+    return this.aulasService.findByNivelGradoSeccion(
+      nivel,
+      grado,
+      seccion
+    );
   }
 
   @Patch(':id')
@@ -38,9 +56,14 @@ export class MatriculasController {
     return this.matriculasService.cambiarEstado(+id, estado)
   }
 
-  @Get('dni/:dni')
-  findByDni(@Param('dni') dni: string) {
+  @Get('estudiante/:dni')
+  findByDniEstudiante(@Param('dni') dni: string) {
     return this.estudiantesService.findByDni(dni);
+  }
+
+  @Get('padre/:dni')
+  findByDniPadre(@Param('dni') dni: string) {
+    return this.padreService.findByDni(dni);
   }
 
   @Get(':id')

@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { EstudiantesService } from './estudiantes.service';
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { Estado } from './constants/estado.enum';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+
 
 @Controller('estudiantes')
 export class EstudiantesController {
@@ -14,8 +16,8 @@ export class EstudiantesController {
   }
 
   @Get()
-  findAll() {
-    return this.estudiantesService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.estudiantesService.findAll(paginationDto);
   }
 
   @Patch(':id')
@@ -34,15 +36,15 @@ export class EstudiantesController {
     return this.estudiantesService.cambiarEstado(+id, estado);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.estudiantesService.findOne(id);
+  }
+  
   // @Get('dni/:dni')
   // findByDni(@Param('dni') dni: string) {
   //   return this.estudiantesService.findByDni(dni);
   // }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.estudiantesService.findOne(+id);
-  }
 
 
   // @Patch(':id')
@@ -54,4 +56,5 @@ export class EstudiantesController {
   // remove(@Param('id') id: string) {
   //   return this.estudiantesService.remove(+id);
   // }
+
 }

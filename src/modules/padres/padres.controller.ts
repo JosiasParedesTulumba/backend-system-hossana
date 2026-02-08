@@ -6,16 +6,11 @@ import { ApiPeruService } from 'src/common/api-peru/api-peru.service';
 
 @Controller('padres')
 export class PadresController {
-  
+
   constructor(
     private readonly padresService: PadresService,
     private readonly apiPeruService: ApiPeruService,
-  ) {}
-
-  @Get('consult/:dni')
-  async consult(@Param('dni') dni: string) {
-    return this.apiPeruService.getPersonByDni(dni);
-  }
+  ) { }
 
   @Post()
   async create(@Body() createPadreDto: CreatePadreDto) {

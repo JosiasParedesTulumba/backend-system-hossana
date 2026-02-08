@@ -26,7 +26,4 @@ export class CreateEstudianteDto {
     @IsDateString({},{ message: 'La fecha de nacimiento debe ser una fecha válida' })
     @IsNotEmpty({ message: 'La fecha de nacimiento es obligatoria' })
     fecha_nacimiento: string;
-
-    @IsEnum(Estado, { message: 'El estado debe ser una cadena de texto (Activo o Inactivo)' })
-    estado: Estado;
 }

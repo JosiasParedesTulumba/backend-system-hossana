@@ -4,6 +4,7 @@ import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Estudiante } from './entities/estudiante.entity';
 import { Repository } from 'typeorm';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Estado } from './constants/estado.enum';
 
 @Injectable()
@@ -21,7 +22,7 @@ export class EstudiantesService {
   }
 
   // Obtener todos los estudiantes
-  async findAll(): Promise<Estudiante[]> {
+  async findAll(paginationDto: PaginationDto): Promise<Estudiante[]> {
     return await this.estudianteRepository.find({
       order: {
         estudiante_id: 'DESC',
@@ -72,6 +73,12 @@ export class EstudiantesService {
       throw new NotFoundException('Estudiante no encontrado');
     }
     return estudiante;
+  }
+
+  //nombre completo
+  async getNombreEstudiante(id: number): Promise<string> {
+    const estudiante = await this.findOne(id);
+    return `${estudiante.nombres} ${estudiante.apellido_paterno} ${estudiante.apellido_materno}`;
   }
 
   // Eliminar estudiante (físico)

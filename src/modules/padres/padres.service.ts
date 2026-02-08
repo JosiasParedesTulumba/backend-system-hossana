@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePadreDto } from './dto/create-padre.dto';
 import { UpdatePadreDto } from './dto/update-padre.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,19 +11,33 @@ export class PadresService {
   constructor(
     @InjectRepository(Padre)
     private readonly padreRepository: Repository<Padre>
-  ){}
+  ) { }
 
   async create(createPadreDto: CreatePadreDto) {
     const newPadre = this.padreRepository.create(createPadreDto);
-    await this.padreRepository.save(newPadre);
+    return this.padreRepository.save(newPadre);
   }
 
   async findAll() {
-    await this.padreRepository.find();
+    return this.padreRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} padre`;
+  async findOne(id: number): Promise<Padre> {
+    const padre = await this.padreRepository.findOneBy({ padre_id: id });
+    if (!padre) throw new NotFoundException(`Padre con ID ${id} no encontrado`);
+    return padre;
+  }
+
+  async findByDni(dni: string): Promise<Padre> {
+    const padre = await this.padreRepository.findOne({
+      where: { dni }
+    });
+
+    if (!padre) {
+      throw new NotFoundException('Padre no encontrado');
+    }
+
+    return padre;
   }
 
   update(id: number, updatePadreDto: UpdatePadreDto) {

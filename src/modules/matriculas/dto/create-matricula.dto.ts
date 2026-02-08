@@ -19,12 +19,8 @@ export class CreateMatriculaDto {
     @Type(() => Number)
     @IsNotEmpty({ message: 'El padre responsable es obligatorio' })
     @IsNumber({}, { message: 'El padre responsable debe ser un número' })
-    padre_id: number;
-
-    @IsNotEmpty({ message: 'El codigo de matricula es obligatoria' })
-    @IsString({ message: 'El codigo de matricula debe ser texto combinado' })
-    codigo_matricula: string;
-
+    padre_responsable_id: number;
+    
     @IsNotEmpty({ message: 'La situación es obligatoria' })
     @IsEnum(Situacion, {
         message: 'La situación debe ser Ingresante, Promovido o Repitente',
@@ -57,14 +53,4 @@ export class CreateMatriculaDto {
     @IsNumber({}, { message: 'La mensualidad debe ser un número válido' })
     @Min(0, { message: 'La mensualidad no puede ser negativa' })
     mensualidad: number;
-
-    @IsNotEmpty({ message: 'La fecha de matrícula es obligatoria' })
-    @IsDate({ message: 'La fecha de matrícula debe ser una fecha válida' })
-    fecha_matricula: string;
-
-    @IsNotEmpty({ message: 'El estado es obligatorio' })
-    @IsEnum(EstadoMatricula, {
-        message: 'El estado debe ser Activo o Inactivo',
-    })
-    estado: EstadoMatricula;
 }
