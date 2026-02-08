@@ -65,11 +65,19 @@ export class PadresService {
     }
   }
 
-  async findOne(padre_id: number): Promise<Padre> {
-    const padre = await this.padreRepository.findOneBy({padre_id})
+  async findOne(id: number): Promise<Padre> {
+    const padre = await this.padreRepository.findOneBy({ padre_id: id });
+    if (!padre) throw new NotFoundException(`Padre con ID ${id} no encontrado`);
+    return padre;
+  }
 
-    if(!padre){
-      throw new NotFoundException('Padre no encontrado')
+  async findByDni(dni: string): Promise<Padre> {
+    const padre = await this.padreRepository.findOne({
+      where: { dni }
+    });
+
+    if (!padre) {
+      throw new NotFoundException('Padre no encontrado');
     }
 
     return padre;

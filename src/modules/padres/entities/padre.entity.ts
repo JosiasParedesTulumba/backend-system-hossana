@@ -1,6 +1,7 @@
 import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TipoRelacion } from "../constants/tipo-relacion.enum";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
+import { Pagos } from "src/modules/pagos/entities/pagos.entity";
 
 @Entity('padres')
 export class Padre {
@@ -10,29 +11,37 @@ export class Padre {
 
     @Column({
         type: 'varchar',
-        length: 200,
-        nullable: false,    
-    })
-    nombre: string;
-
-    @Column({
-        type: 'varchar',
-        length: 200,
-        nullable: false,    
-    })
-    apellido: string;
-
-    @Column({
-        type: 'varchar',
         length: 20,
-        unique: true,    
+        unique: true, 
+        nullable: false,   
     })
     dni: string;
+
+    @Column({ 
+        type: 'varchar',
+        length: 200,
+        nullable: false,    
+    })
+    nombres: string;
+
+    @Column({
+        type: 'varchar',
+        length: 200,
+        nullable: false,    
+    })
+    apellido_materno: string;
+
+    @Column({
+        type: 'varchar',
+        length: 200,
+        nullable: false,    
+    })
+    apellido_paterno: string;
     
     @Column({
         type: 'varchar',
         length: 100,
-        nullable: false,  
+        nullable: false,    
     })
     telefono: string;
 
@@ -70,4 +79,9 @@ export class Padre {
     @OneToMany(() => Matricula, (matricula) => matricula.padre_responsable)
     matriculas_como_responsable: Matricula[];
 
+    //relaciones con pagos 
+
+    @OneToMany(() => Pagos, (pagos) => pagos.pagador)
+    pagos_padre: Pagos[];
+    
 }

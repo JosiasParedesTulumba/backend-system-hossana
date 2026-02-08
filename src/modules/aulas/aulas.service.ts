@@ -4,6 +4,7 @@ import { UpdateAulaDto } from './dto/update-aula.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Aula } from './entities/aula.entity';
 import { Repository } from 'typeorm';
+import { NivelEducativo } from './constants/nivel-educativo.enum';
 
 @Injectable()
 export class AulasService {
@@ -23,8 +24,12 @@ export class AulasService {
     }
   }
 
-  async findAll() {
-    await this.aulaRepository.find();
+  async findAll(): Promise<Aula[]> {
+    return await this.aulaRepository.find({
+      order: {
+        aula_id: 'DESC'
+      }
+    });
   }
 
   async findOne(aula_id: number): Promise<Aula> {
@@ -47,11 +52,39 @@ export class AulasService {
     }
 
     const updateAula = this.aulaRepository.merge(
-      aula, 
+      aula,
       updateAulaDto
     );
 
     return await this.aulaRepository.save(updateAula);
+  }
+
+  async findByNivelGradoSeccion(
+    nivel: NivelEducativo,
+    grado: string,
+    seccion: string
+  ): Promise<Aula> {
+
+    const aula = await this.aulaRepository.findOne({
+      where: {
+        nivel,
+        grado,
+        seccion
+      }
+    });
+
+    if (!aula) {
+      throw new NotFoundException(
+        'No existe un aula con el nivel, grado y sección seleccionados'
+      );
+    }
+
+    return aula;
+  }
+
+  async getNombreAula( id: number): Promise<string> {
+    const aula = await this.findOne(id);
+    return `${aula.nivel}-${aula.grado}-${aula.seccion}`;
   }
 
   remove(id: number) {

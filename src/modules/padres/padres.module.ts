@@ -13,5 +13,6 @@ import { Matricula } from '../matriculas/entities/matricula.entity';
   ],
   controllers: [PadresController],
   providers: [PadresService],
+  exports: [PadresService]
 })
 export class PadresModule {}

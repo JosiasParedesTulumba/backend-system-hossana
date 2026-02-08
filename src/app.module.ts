@@ -11,6 +11,7 @@ import { PrestamosModule } from './modules/prestamos/prestamos.module';
 import { MatriculasModule } from './modules/matriculas/matriculas.module';
 import { ApiPeruModule } from './common/api-peru/api-peru.module';
 import { InformacionMedicaModule } from './modules/informacion-medica/informacion-medica.module';
+import { PagosModule } from './modules/pagos/pagos.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { InformacionMedicaModule } from './modules/informacion-medica/informacio
     MatriculasModule,
     ApiPeruModule,
     InformacionMedicaModule,
+    PagosModule
   ],
   controllers: [],
   providers: [],

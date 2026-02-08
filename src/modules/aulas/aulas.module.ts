@@ -10,5 +10,6 @@ import { Aula } from './entities/aula.entity';
   ],
   controllers: [AulasController],
   providers: [AulasService],
+  exports: [AulasService],
 })
 export class AulasModule {}

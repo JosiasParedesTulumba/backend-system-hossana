@@ -1,8 +1,11 @@
 import { Aula } from "src/modules/aulas/entities/aula.entity";
 import { Estudiante } from "src/modules/estudiantes/entities/estudiante.entity";
 import { Padre } from "src/modules/padres/entities/padre.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { EstadoMatricula } from "../constants/estado-matricula.enum";
+import { Situacion } from "../constants/situacion.enum";
+import { Procedencia } from "../constants/procedencia.enum";
+import { Pagos } from "src/modules/pagos/entities/pagos.entity";
 
 @Entity('matriculas')
 export class Matricula {
@@ -10,7 +13,7 @@ export class Matricula {
     @PrimaryGeneratedColumn()
     matricula_id: number;
 
-    @ManyToOne(() => Estudiante, estudiante => estudiante.matricula )
+    @ManyToOne(() => Estudiante, estudiante => estudiante.matricula)
     @JoinColumn({ name: 'estudiante_id' })
     estudiante: Estudiante;
 
@@ -18,59 +21,108 @@ export class Matricula {
     @JoinColumn({ name: 'aula_id' })
     aula: Aula;
 
-        // Relaciones con padres (pueden ser null)
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_padre, { 
-        nullable: true, 
-        onDelete: 'SET NULL' 
+    // Relaciones con padres (pueden ser null)
+    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_padre, {
+        nullable: true,
+        onDelete: 'SET NULL'
     })
     @JoinColumn({ name: 'padre_id' })
     padre: Padre;
 
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_madre, { 
-        nullable: true, 
-        onDelete: 'SET NULL' 
+    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_madre, {
+        nullable: true,
+        onDelete: 'SET NULL'
     })
     @JoinColumn({ name: 'madre_id' })
     madre: Padre;
 
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_tutor, { 
-        nullable: true, 
-        onDelete: 'SET NULL' 
+    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_tutor, {
+        nullable: true,
+        onDelete: 'SET NULL'
     })
     @JoinColumn({ name: 'tutor_id' })
     tutor: Padre;
 
     // Responsable (obligatorio, no puede ser null)
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_responsable, { 
-        onDelete: 'RESTRICT' 
+    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_responsable, {
+        onDelete: 'RESTRICT'
     })
     @JoinColumn({ name: 'padre_responsable_id' })
     padre_responsable: Padre;
 
-    @Column({ type: 'date', nullable: false })
-    fecha_matricula: Date;
+    @Column({
+        type: 'varchar',
+        length: 20,
+        nullable: false,
+        unique: true
+    })
+    codigo_matricula: string;
 
-    @Column({ 
-        type: 'enum', 
-        enum: EstadoMatricula, 
+    @Column({
+        type: 'enum',
+        enum: Situacion,
+        enumName: 'Situacion',
+        nullable: false
+    })
+    situacion: Situacion;
+
+    @Column({
+        type: 'enum',
+        enum: Procedencia,
+        enumName: 'Procedencia',
+        nullable: false
+    })
+    procedencia: Procedencia;
+
+    @Column({
+        type: 'varchar',
+        length: 200,
+        nullable: true
+    })
+    ie_procedencia: string;
+
+    @Column({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+    })
+    inscripcion: number;
+
+    @Column({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+    })
+    matricula: number;
+
+    @Column({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+    })
+    mensualidad: number;
+
+    @Column({ type: 'date', default: () => 'CURRENT_DATE' })
+    fecha_matricula: string;
+
+    @Column({
+        type: 'enum',
+        enum: EstadoMatricula,
         default: EstadoMatricula.ACTIVO,
         enumName: 'estado_matricula_'
     })
     estado: EstadoMatricula;
 
-    @Column({
-        type: 'decimal', 
-        precision: 10, 
-        scale: 2, 
-    })
-    monto: number;
+    @OneToMany(() => Pagos, pagos => pagos.matricula)
+    pagos: Pagos[];
 
-    @Column({ type: 'varchar', length: 50 })
-    metodo_pago: string;
 
-    @Column({ 
-        type: 'timestamp', 
-        default: () => 'CURRENT_TIMESTAMP' 
-    })
-    creado_en: Date;
+    // @Column({ type: 'varchar', length: 50 })
+    // metodo_pago: string;
+
+    // @Column({ 
+    //     type: 'timestamp', 
+    //     default: () => 'CURRENT_TIMESTAMP' 
+    // })
+    // creado_en: Date;
 }

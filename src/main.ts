@@ -16,6 +16,16 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
+  app.enableCors(); // comunicación con Angular
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,      // 👈 activa @Type()
+      // whitelist: true,      // 👈 elimina campos que no están en el DTO
+      // forbidNonWhitelisted: true, // 👈 error si mandan campos extra
+    }),
+  );
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

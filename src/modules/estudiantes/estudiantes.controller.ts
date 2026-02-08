@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { EstudiantesService } from './estudiantes.service';
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
+import { Estado } from './constants/estado.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+
 
 @Controller('estudiantes')
 export class EstudiantesController {
@@ -18,18 +20,41 @@ export class EstudiantesController {
     return this.estudiantesService.findAll(paginationDto);
   }
 
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateEstudianteDto: UpdateEstudianteDto,
+  ) {
+    return this.estudiantesService.update(+id, updateEstudianteDto);
+  }
+
+  @Put('estado/:id')
+  cambiarEstado(
+    @Param('id') id: string,
+    @Body('estado') estado: Estado,
+  ) {
+    return this.estudiantesService.cambiarEstado(+id, estado);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number) {
     return this.estudiantesService.findOne(id);
   }
+  
+  // @Get('dni/:dni')
+  // findByDni(@Param('dni') dni: string) {
+  //   return this.estudiantesService.findByDni(dni);
+  // }
 
-  @Patch(':id')
-  async update(@Param('id') id: number, @Body() updateEstudianteDto: UpdateEstudianteDto) {
-    return this.estudiantesService.update(id, updateEstudianteDto);
-  }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number) {
-    return this.estudiantesService.softDelete(id);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateEstudianteDto: UpdateEstudianteDto) {
+  //   return this.estudiantesService.update(+id, updateEstudianteDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.estudiantesService.remove(+id);
+  // }
+
 }

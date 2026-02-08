@@ -18,5 +18,6 @@ import { Matricula } from '../matriculas/entities/matricula.entity';
   ],
   controllers: [EstudiantesController],
   providers: [EstudiantesService],
+  exports: [EstudiantesService],
 })
 export class EstudiantesModule {}
