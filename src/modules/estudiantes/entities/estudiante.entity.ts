@@ -6,44 +6,45 @@ import { Genero } from "../constants/genero.enum";
 import { Estado } from "../constants/estado.enum";
 import { InformacionMedica } from "src/modules/informacion-medica/entities/informacion-medica.entity";
 import { Pagos } from "src/modules/pagos/entities/pagos.entity";
+import { EstudiantePadre } from "./estudiante-padre.entity";
 
 
 @Entity('estudiantes')
-export class Estudiante { 
+export class Estudiante {
 
     @PrimaryGeneratedColumn()
     estudiante_id: number;
 
-    @Column({ 
-        type: 'varchar', 
-        length: 20, 
-        unique: true    
+    @Column({
+        type: 'varchar',
+        length: 20,
+        unique: true
     })
     dni: string;
 
-    @Column({ 
-        type: 'varchar', 
+    @Column({
+        type: 'varchar',
         length: 200,
         nullable: false
     })
     nombres: string;
 
-    @Column({ 
-        type: 'varchar', 
+    @Column({
+        type: 'varchar',
         length: 200,
         nullable: false
     })
     apellido_paterno: string;
 
-    @Column({ 
-        type: 'varchar', 
+    @Column({
+        type: 'varchar',
         length: 200,
         nullable: false
     })
     apellido_materno: string;
 
-    @Column({ 
-        type: 'enum', 
+    @Column({
+        type: 'enum',
         enum: Genero,
         enumName: 'Genero',
         nullable: false
@@ -53,15 +54,15 @@ export class Estudiante {
     @Column({ name: 'fecha_nacimiento', type: 'date' })
     fecha_nacimiento: string;
 
-    @Column({ 
-        type: 'enum', 
+    @Column({
+        type: 'enum',
         enum: Estado,
         enumName: 'Estado',
         default: Estado.ACTIVO
     })
     estado: Estado;
 
-    
+
     // @Column({ type: 'text' })
     // direccion: string;
 
@@ -92,4 +93,7 @@ export class Estudiante {
 
     @OneToOne(() => InformacionMedica, informacionMedica => informacionMedica.estudiante)
     informacion_medica: InformacionMedica[];
+
+    @OneToMany(() => EstudiantePadre, estudiantePadre => estudiantePadre.estudiante)
+    estudiante_padres: EstudiantePadre[];
 }

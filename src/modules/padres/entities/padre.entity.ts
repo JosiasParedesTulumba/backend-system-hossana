@@ -2,6 +2,7 @@ import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } f
 import { TipoRelacion } from "../constants/tipo-relacion.enum";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
 import { Pagos } from "src/modules/pagos/entities/pagos.entity";
+import { EstudiantePadre } from "src/modules/estudiantes/entities/estudiante-padre.entity";
 
 @Entity('padres')
 export class Padre {
@@ -12,36 +13,36 @@ export class Padre {
     @Column({
         type: 'varchar',
         length: 20,
-        unique: true, 
-        nullable: false,   
+        unique: true,
+        nullable: false,
     })
     dni: string;
 
-    @Column({ 
+    @Column({
         type: 'varchar',
         length: 200,
-        nullable: false,    
+        nullable: false,
     })
     nombres: string;
 
     @Column({
         type: 'varchar',
         length: 200,
-        nullable: false,    
+        nullable: false,
     })
     apellido_materno: string;
 
     @Column({
         type: 'varchar',
         length: 200,
-        nullable: false,    
+        nullable: false,
     })
     apellido_paterno: string;
-    
+
     @Column({
         type: 'varchar',
         length: 100,
-        nullable: false,    
+        nullable: false,
     })
     telefono: string;
 
@@ -67,14 +68,8 @@ export class Padre {
     @Column({ type: 'varchar', length: 100, nullable: true })
     detalles_relacion: string;
 
-    @OneToMany(() => Matricula, (matricula) => matricula.padre)
-    matriculas_como_padre: Matricula[];
-
-    @OneToMany(() => Matricula, (matricula) => matricula.madre)
-    matriculas_como_madre: Matricula[];
-
-    @OneToMany(() => Matricula, (matricula) => matricula.tutor)
-    matriculas_como_tutor: Matricula[];
+    @Column({ default: false })
+    es_contacto_principal: boolean;
 
     @OneToMany(() => Matricula, (matricula) => matricula.padre_responsable)
     matriculas_como_responsable: Matricula[];
@@ -83,5 +78,7 @@ export class Padre {
 
     @OneToMany(() => Pagos, (pagos) => pagos.pagador)
     pagos_padre: Pagos[];
-    
+
+    @OneToMany(() => EstudiantePadre, estudiantePadre => estudiantePadre.padre)
+    estudiante_padre: EstudiantePadre[];
 }

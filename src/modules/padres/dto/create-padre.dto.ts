@@ -1,23 +1,31 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from "class-validator";
 import { TipoRelacion } from "../constants/tipo-relacion.enum";
 
 export class CreatePadreDto {
 
     @IsString()
     @MinLength(2)
-    @MaxLength(50)
+    @MaxLength(100)
     @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, {
         message: 'Solo letras y espacios'
     })
-    nombre: string;
+    nombres: string;
 
     @IsString()
     @MinLength(2)
-    @MaxLength(50)
+    @MaxLength(100)
     @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, {
         message: 'Solo letras y espacios'
     })
-    apellido: string;
+    apellido_paterno: string;
+
+    @IsString()
+    @MinLength(2)
+    @MaxLength(100)
+    @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, {
+        message: 'Solo letras y espacios'
+    })
+    apellido_materno: string;
 
     @IsString()
     @Matches(/^\d{8}$/, {
@@ -46,4 +54,8 @@ export class CreatePadreDto {
     @IsString()
     @MaxLength(150)
     detalles_relacion?: string;
+
+    @IsOptional()
+    @IsBoolean({ message: 'es_contacto_principal debe ser un valor booleano' })
+    es_contacto_principal?: boolean;
 }
