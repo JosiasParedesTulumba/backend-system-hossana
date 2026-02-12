@@ -15,10 +15,6 @@ export class PagosService {
     constructor(
         @InjectRepository(Pagos)
         private readonly pagosRepository: Repository<Pagos>,
-        @InjectRepository(Estudiante)
-        private readonly estudianteRepository: Repository<Estudiante>,
-        @InjectRepository(Aula)
-        private readonly aulaRepository: Repository<Aula>,
         @InjectRepository(Matricula)
         private readonly matriculaRepository: Repository<Matricula>,
         @InjectRepository(Padre)
@@ -29,7 +25,10 @@ export class PagosService {
     async findAll(): Promise<Pagos[]> {
         return await this.pagosRepository.find({
             relations: {
-                matricula: true,
+                matricula: {
+                    estudiante: true,
+                    aula: true,
+                },
                 pagador: true,
             },
             order: {
@@ -39,20 +38,10 @@ export class PagosService {
     }
 
     //Agregar un pago
-
     async create(createPagosDto: CreatePagosDto): Promise<Pagos> {
 
-        const { estudiante_id, aula_id, matricula_id, madre_id, padre_id, tutor_id, padre_responsable_id, ...datosPago } = createPagosDto;
+        const {matricula_id, padre_id, ...datosPago } = createPagosDto;
 
-
-        const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
-        if (!estudiante) {
-            throw new NotFoundException('Estudiante no encontrado');
-        }
-        const aula = await this.aulaRepository.findOneBy({ aula_id });
-        if (!aula) {
-            throw new NotFoundException('Aula no encontrada');
-        }
         const matricula = await this.matriculaRepository.findOneBy({ matricula_id });
         if (!matricula) {
             throw new NotFoundException('Matrícula no encontrada');
@@ -72,37 +61,37 @@ export class PagosService {
         return await this.pagosRepository.save(nuevoPago);
     }
 
-    //Actualizar un pago
-    async update(
-        id: number,
-        updatePagosDto: UpdatePagosDto
-    ): Promise<Pagos> {
+    // //Actualizar un pago
+    // async update(
+    //     id: number,
+    //     updatePagosDto: UpdatePagosDto
+    // ): Promise<Pagos> {
 
-        const pago = await this.pagosRepository.findOne({
-            where: { pagos_id: id },
-            relations: ['estudiante', 'aula', 'matricula', 'pagador'],
-        });
+    //     const pago = await this.pagosRepository.findOne({
+    //         where: { pagos_id: id },
+    //         relations: ['estudiante', 'aula', 'matricula', 'pagador'],
+    //     });
 
-        if (!pago) {
-            throw new NotFoundException('Pago no encontrado');
-        }
+    //     if (!pago) {
+    //         throw new NotFoundException('Pago no encontrado');
+    //     }
 
-        const {
-            matricula_id,
-            padre_id,
-            ...datosPago
-        } = updatePagosDto;
+    //     const {
+    //         matricula_id,
+    //         padre_id,
+    //         ...datosPago
+    //     } = updatePagosDto;
 
-        Object.assign(pago, datosPago);
+    //     Object.assign(pago, datosPago);
 
-        if (padre_id) {
-            const padre = await this.padreRepository.findOneBy({ padre_id });
-            if (!padre) throw new NotFoundException('Padre no encontrado');
-            pago.pagador = padre;
-        }
+    //     if (padre_id) {
+    //         const padre = await this.padreRepository.findOneBy({ padre_id });
+    //         if (!padre) throw new NotFoundException('Padre no encontrado');
+    //         pago.pagador = padre;
+    //     }
 
-        return await this.pagosRepository.save(pago);
-    }
+    //     return await this.pagosRepository.save(pago);
+    // }
 
     //Obtener un pago por id
     async findOne(id: number): Promise<Pagos> {
@@ -110,7 +99,10 @@ export class PagosService {
             ({
                 where: { pagos_id: id },
                 relations: {
-                    matricula: true,
+                    matricula: {
+                        estudiante: true,
+                        aula: true,
+                    },
                     pagador: true,
                 }
             })

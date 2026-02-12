@@ -40,13 +40,13 @@ export class PagosController {
         return this.pagosService.create(createPagosDto)
     }
 
-    @Patch(':id')
-    update(
-        @Param('id') id: string,
-        @Body() updatePagosDto: UpdatePagosDto
-    ) {
-        return this.pagosService.update(+id, updatePagosDto)
-    }
+    // @Patch(':id')
+    // update(
+    //     @Param('id') id: string,
+    //     @Body() updatePagosDto: UpdatePagosDto
+    // ) {
+    //     return this.pagosService.update(+id, updatePagosDto)
+    // }
 
     @Get(':id')
     findOne(@Param('id') id: string) {
