@@ -29,8 +29,6 @@ export class PagosService {
     async findAll(): Promise<Pagos[]> {
         return await this.pagosRepository.find({
             relations: {
-                estudiante: true,
-                aula: true,
                 matricula: true,
                 pagador: true,
             },
@@ -67,8 +65,6 @@ export class PagosService {
 
         const nuevoPago = this.pagosRepository.create({
             ...datosPago,
-            estudiante,
-            aula,
             matricula,
             pagador: padre,
         });
@@ -92,26 +88,12 @@ export class PagosService {
         }
 
         const {
-            estudiante_id,
-            aula_id,
             matricula_id,
             padre_id,
             ...datosPago
         } = updatePagosDto;
 
         Object.assign(pago, datosPago);
-
-        if (estudiante_id) {
-            const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
-            if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
-            pago.estudiante = estudiante;
-        }
-
-        if (aula_id) {
-            const aula = await this.aulaRepository.findOneBy({ aula_id });
-            if (!aula) throw new NotFoundException('Aula no encontrada');
-            pago.aula = aula;
-        }
 
         if (padre_id) {
             const padre = await this.padreRepository.findOneBy({ padre_id });
@@ -128,8 +110,6 @@ export class PagosService {
             ({
                 where: { pagos_id: id },
                 relations: {
-                    estudiante: true,
-                    aula: true,
                     matricula: true,
                     pagador: true,
                 }

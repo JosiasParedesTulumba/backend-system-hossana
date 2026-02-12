@@ -87,9 +87,6 @@ export class Estudiante {
     @OneToMany(() => Matricula, matricula => matricula.estudiante)
     matricula: Matricula[];
 
-    @OneToMany(() => Pagos, pagos => pagos.estudiante)
-    pagos: Pagos[];
-
     @OneToOne(() => InformacionMedica, informacionMedica => informacionMedica.estudiante)
     informacion_medica: InformacionMedica[];
 }

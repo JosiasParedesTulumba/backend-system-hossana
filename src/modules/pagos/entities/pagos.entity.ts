@@ -16,17 +16,9 @@ export class Pagos {
 
     // Relaciones
 
-    @ManyToOne(() => Estudiante, estudiante => estudiante.pagos)
-    @JoinColumn({ name: 'estudiante_id' })
-    estudiante: Estudiante;
-
     @ManyToOne(() => Matricula, matricula => matricula.pagos)
     @JoinColumn({ name: 'matricula_id' })
     matricula: Matricula;
-
-    @ManyToOne(() => Aula, aula => aula.pagos)
-    @JoinColumn({ name: 'aula_id' })
-    aula: Aula;
 
     // Relacion con todos los padres posibles como pagadores
 
@@ -74,7 +66,7 @@ export class Pagos {
         precision: 10,
         scale: 2,
     })
-    monto: number;
+    monto_pagado: number;
 
     @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     fecha_pago: string;
