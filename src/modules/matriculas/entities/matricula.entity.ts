@@ -21,28 +21,6 @@ export class Matricula {
     @JoinColumn({ name: 'aula_id' })
     aula: Aula;
 
-    // Relaciones con padres (pueden ser null)
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_padre, {
-        nullable: true,
-        onDelete: 'SET NULL'
-    })
-    @JoinColumn({ name: 'padre_id' })
-    padre: Padre;
-
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_madre, {
-        nullable: true,
-        onDelete: 'SET NULL'
-    })
-    @JoinColumn({ name: 'madre_id' })
-    madre: Padre;
-
-    @ManyToOne(() => Padre, (padre) => padre.matriculas_como_tutor, {
-        nullable: true,
-        onDelete: 'SET NULL'
-    })
-    @JoinColumn({ name: 'tutor_id' })
-    tutor: Padre;
-
     // Responsable (obligatorio, no puede ser null)
     @ManyToOne(() => Padre, (padre) => padre.matriculas_como_responsable, {
         onDelete: 'RESTRICT'
@@ -102,8 +80,8 @@ export class Matricula {
     })
     mensualidad: number;
 
-    @Column({ type: 'date', default: () => 'CURRENT_DATE' })
-    fecha_matricula: string;
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+    fecha_matricula: Date;
 
     @Column({
         type: 'enum',

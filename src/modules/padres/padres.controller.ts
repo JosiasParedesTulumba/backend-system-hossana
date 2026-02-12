@@ -1,15 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { PadresService } from './padres.service';
 import { CreatePadreDto } from './dto/create-padre.dto';
 import { UpdatePadreDto } from './dto/update-padre.dto';
-import { ApiPeruService } from 'src/common/api-peru/api-peru.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('padres')
 export class PadresController {
 
   constructor(
     private readonly padresService: PadresService,
-    private readonly apiPeruService: ApiPeruService,
   ) { }
 
   @Post()
@@ -18,22 +17,66 @@ export class PadresController {
   }
 
   @Get()
-  findAll() {
-    return this.padresService.findAll();
+  async findAll(@Query() paginationDTO: PaginationDto) {
+    return this.padresService.findAll(paginationDTO);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.padresService.findOne(+id);
+  async findOne(@Param('id') id: number) {
+    return this.padresService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePadreDto: UpdatePadreDto) {
-    return this.padresService.update(+id, updatePadreDto);
+  async update(@Param('id') id: number, @Body() updatePadreDto: UpdatePadreDto) {
+    return this.padresService.update(id, updatePadreDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.padresService.remove(+id);
+  async remove(@Param('id') id: number) {
+    return this.padresService.remove(id);
+  }
+
+  // ==================== ENDPOINTS PARA ASIGNACIÓN DE ESTUDIANTES ====================
+
+  /**
+   * Buscar estudiante por DNI
+   */
+  @Get('search-estudiante/:dni')
+  async searchEstudiante(@Param('dni') dni: string) {
+    return this.padresService.findEstudianteByDni(dni);
+  }
+
+  /**
+ * Asignar estudiante a un padre
+ * POST /api/padres/:id/estudiantes
+ */
+  @Post(':id/estudiantes')
+  async assignEstudiante(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { estudiante_id: number }
+  ) {
+    return this.padresService.assignEstudiante(
+      id,
+      body.estudiante_id
+    );
+  }
+
+  /**
+   * Obtener estudiantes asignados a un padre
+   */
+  @Get(':id/estudiantes')
+  async getEstudiantesAsignados(@Param('id') id: number) {
+    return this.padresService.getEstudiantesAsignados(id);
+  }
+
+  /**
+   * Eliminar asignación de estudiante
+   */
+  @Delete(':id/estudiantes/:estudiante_id')
+  async removeEstudiante(
+    @Param('id') id: number,
+    @Param('estudiante_id') estudiante_id: number
+  ) {
+    return this.padresService.removeEstudiante(id, estudiante_id);
   }
 }

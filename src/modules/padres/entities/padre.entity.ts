@@ -1,7 +1,8 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TipoRelacion } from "../constants/tipo-relacion.enum";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
 import { Pagos } from "src/modules/pagos/entities/pagos.entity";
+import { EstudiantePadre } from "src/modules/estudiantes/entities/estudiante-padre.entity";
 
 @Entity('padres')
 export class Padre {
@@ -12,47 +13,47 @@ export class Padre {
     @Column({
         type: 'varchar',
         length: 20,
-        unique: true, 
-        nullable: false,   
+        unique: true,
+        nullable: false,
     })
     dni: string;
 
-    @Column({ 
+    @Column({
         type: 'varchar',
         length: 200,
-        nullable: false,    
+        nullable: false,
     })
     nombres: string;
 
     @Column({
         type: 'varchar',
         length: 200,
-        nullable: false,    
+        nullable: false,
     })
     apellido_materno: string;
 
     @Column({
         type: 'varchar',
         length: 200,
-        nullable: false,    
+        nullable: false,
     })
     apellido_paterno: string;
-    
-    // @Column({
-    //     type: 'varchar',
-    //     length: 100,
-    //     nullable: false,    
-    // })
-    // telefono: string;
 
-    // @Column({
-    //     type: 'varchar',
-    //     length: 200,
-    // })
-    // email: string;
+    @Column({
+        type: 'varchar',
+        length: 100,
+        nullable: false,
+    })
+    telefono: string;
 
-    // @Column({ type: 'text' })
-    // direccion: string;
+    @Column({
+        type: 'varchar',
+        length: 200,
+    })
+    email: string;
+
+    @Column({ type: 'text' })
+    direccion: string;
 
     @Column({
         type: 'enum',
@@ -61,17 +62,14 @@ export class Padre {
     })
     tipo_relacion: TipoRelacion;
 
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
+
     @Column({ type: 'varchar', length: 100, nullable: true })
     detalles_relacion: string;
 
-    @OneToMany(() => Matricula, (matricula) => matricula.padre)
-    matriculas_como_padre: Matricula[];
-
-    @OneToMany(() => Matricula, (matricula) => matricula.madre)
-    matriculas_como_madre: Matricula[];
-
-    @OneToMany(() => Matricula, (matricula) => matricula.tutor)
-    matriculas_como_tutor: Matricula[];
+    @Column({ default: false })
+    es_contacto_principal: boolean;
 
     @OneToMany(() => Matricula, (matricula) => matricula.padre_responsable)
     matriculas_como_responsable: Matricula[];
@@ -80,5 +78,7 @@ export class Padre {
 
     @OneToMany(() => Pagos, (pagos) => pagos.pagador)
     pagos_padre: Pagos[];
-    
+
+    @OneToMany(() => EstudiantePadre, estudiantePadre => estudiantePadre.padre)
+    estudiante_padre: EstudiantePadre[];
 }
