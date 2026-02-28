@@ -39,10 +39,7 @@ export class Aula {
 
     @OneToMany(() => MaterialAula, materialAula => materialAula.aula)
     material_aulas: MaterialAula[];
-
-    @OneToMany(() => Pagos, pagos => pagos.aula)
-    pagos: Pagos[];
-
+    
     @OneToMany(() => Prestamo, prestamo => prestamo.aula)
     prestamos: Prestamo[];
 

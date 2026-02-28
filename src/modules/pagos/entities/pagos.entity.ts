@@ -1,13 +1,14 @@
 import { Aula } from "src/modules/aulas/entities/aula.entity";
 import { Estudiante } from "src/modules/estudiantes/entities/estudiante.entity";
 import { Matricula } from "src/modules/matriculas/entities/matricula.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Concepto } from "../constants/concepto.enum";
 import { CanalPago } from "../constants/canal-pago.enum";
 import { Meses } from "../constants/meses.enum";
 import { Padre } from "src/modules/padres/entities/padre.entity";
 import { Estado_pago } from "../constants/estado.enum";
-import { TipoPagador } from "../constants/tipo-pagador.enum";
+// import { TipoPagador } from "../constants/tipo-pagador.enum";
+import { DetallePagos } from "./detalle-pagos.entity";
 
 @Entity('pagos')
 export class Pagos {
@@ -16,34 +17,10 @@ export class Pagos {
 
     // Relaciones
 
-    @ManyToOne(() => Estudiante, estudiante => estudiante.pagos)
-    @JoinColumn({ name: 'estudiante_id' })
-    estudiante: Estudiante;
-
     @ManyToOne(() => Matricula, matricula => matricula.pagos)
     @JoinColumn({ name: 'matricula_id' })
     matricula: Matricula;
 
-    @ManyToOne(() => Aula, aula => aula.pagos)
-    @JoinColumn({ name: 'aula_id' })
-    aula: Aula;
-
-    // Relacion con todos los padres posibles como pagadores
-
-    @ManyToOne(() => Padre, (padre) => padre.pagos_padre, {
-        nullable: true,
-        onDelete: 'SET NULL'
-    })
-    @JoinColumn({ name: 'padre_id' })
-    pagador: Padre;
-
-    @Column({
-        type: 'enum',
-        enum: TipoPagador,
-        enumName: 'TipoPagador',
-        nullable: false
-    })
-    tipo_pagador: TipoPagador;
 
     @Column({
         type: 'enum',
@@ -55,17 +32,9 @@ export class Pagos {
 
     @Column({
         type: 'enum',
-        enum: CanalPago,
-        enumName: 'CanalPago',
-        nullable: false
-    })
-    canal_pago: CanalPago;
-
-    @Column({
-        type: 'enum',
         enum: Meses,
         enumName: 'Meses',
-        nullable: false
+        nullable: true
     })
     meses: Meses;
 
@@ -74,18 +43,28 @@ export class Pagos {
         precision: 10,
         scale: 2,
     })
-    monto: number;
+    monto_total: number;
 
-    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-    fecha_pago: string;
+    @Column({
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+    })
+    monto_pagado: number;
 
     @Column({
         type: 'enum',
         enum: Estado_pago,
-        default: Estado_pago.PENDIENTE,
+        default: Estado_pago.DEUDA,
         enumName: 'Estado_pago'
     })
     estado: Estado_pago;
+
+    // Relacion con detalle de pagos
+
+    @OneToMany(() => DetallePagos, detallePagos => detallePagos.pago)
+    detalle_pagos: DetallePagos[];
+
 
 
 }

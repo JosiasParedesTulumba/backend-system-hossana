@@ -7,6 +7,8 @@ import { Estado } from "../constants/estado.enum";
 import { InformacionMedica } from "src/modules/informacion-medica/entities/informacion-medica.entity";
 import { Pagos } from "src/modules/pagos/entities/pagos.entity";
 import { EstudiantePadre } from "./estudiante-padre.entity";
+import { Padre } from "src/modules/padres/entities/padre.entity";
+
 
 
 @Entity('estudiantes')
@@ -85,11 +87,13 @@ export class Estudiante {
     @OneToMany(() => Prestamo, prestamo => prestamo.estudiante)
     prestamo: Prestamo[];
 
+    //Relacion con padres
+
+    @OneToMany(() => Padre, padre => padre.estudiante)
+    padres: Padre[];
+
     @OneToMany(() => Matricula, matricula => matricula.estudiante)
     matricula: Matricula[];
-
-    @OneToMany(() => Pagos, pagos => pagos.estudiante)
-    pagos: Pagos[];
 
     @OneToOne(() => InformacionMedica, informacionMedica => informacionMedica.estudiante)
     informacion_medica: InformacionMedica[];

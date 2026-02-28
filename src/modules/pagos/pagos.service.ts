@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pagos } from './entities/pagos.entity';
 import { Repository } from 'typeorm';
@@ -8,6 +8,10 @@ import { Aula } from '../aulas/entities/aula.entity';
 import { Matricula } from '../matriculas/entities/matricula.entity';
 import { Padre } from '../padres/entities/padre.entity';
 import { UpdatePagosDto } from './dto/update-pagos.dto';
+import { Estado_pago } from './constants/estado.enum';
+import { DetallePagos } from './entities/detalle-pagos.entity';
+import { CreateDetallesPagosDto } from './dto/create-detalles-pagos';
+import { CanalPago } from './constants/canal-pago.enum';
 
 @Injectable()
 export class PagosService {
@@ -15,111 +19,124 @@ export class PagosService {
     constructor(
         @InjectRepository(Pagos)
         private readonly pagosRepository: Repository<Pagos>,
-        @InjectRepository(Estudiante)
-        private readonly estudianteRepository: Repository<Estudiante>,
-        @InjectRepository(Aula)
-        private readonly aulaRepository: Repository<Aula>,
         @InjectRepository(Matricula)
         private readonly matriculaRepository: Repository<Matricula>,
         @InjectRepository(Padre)
         private readonly padreRepository: Repository<Padre>,
+        @InjectRepository(DetallePagos)
+        private readonly detalleRepository: Repository<DetallePagos>
     ) { }
 
     //Obtener todos los pagos
     async findAll(): Promise<Pagos[]> {
         return await this.pagosRepository.find({
             relations: {
-                estudiante: true,
-                aula: true,
-                matricula: true,
-                pagador: true,
+                matricula: {
+                    estudiante: true,
+                    aula: true,
+                },
+                // pagador: true,
             },
             order: {
                 pagos_id: 'DESC'
             }
         })
-    }
+    }   
 
-    //Agregar un pago
+    //Crear un nuevo pago
+    async createPagos(createPagosDto: CreatePagosDto): Promise<Pagos> {
 
-    async create(createPagosDto: CreatePagosDto): Promise<Pagos> {
+        const { matricula_id, ...datosPago } = createPagosDto;
 
-        const { estudiante_id, aula_id, matricula_id, madre_id, padre_id, tutor_id, padre_responsable_id, ...datosPago } = createPagosDto;
+        const matricula = await this.matriculaRepository.findOne({
+            where: { matricula_id }
+        });
 
-
-        const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
-        if (!estudiante) {
-            throw new NotFoundException('Estudiante no encontrado');
-        }
-        const aula = await this.aulaRepository.findOneBy({ aula_id });
-        if (!aula) {
-            throw new NotFoundException('Aula no encontrada');
-        }
-        const matricula = await this.matriculaRepository.findOneBy({ matricula_id });
         if (!matricula) {
             throw new NotFoundException('Matrícula no encontrada');
         }
 
-        const padre = await this.padreRepository.findOneBy({ padre_id: padre_id });
-        if (!padre) {
-            throw new NotFoundException('Padre no encontrado');
-        }
-
         const nuevoPago = this.pagosRepository.create({
             ...datosPago,
-            estudiante,
-            aula,
             matricula,
-            pagador: padre,
+            monto_pagado: 0,
+            estado: Estado_pago.DEUDA
         });
 
         return await this.pagosRepository.save(nuevoPago);
     }
 
-    //Actualizar un pago
-    async update(
-        id: number,
-        updatePagosDto: UpdatePagosDto
-    ): Promise<Pagos> {
+    //Crear un nuevo detalle de pago
+    async createDetalle(createDetalleDto: CreateDetallesPagosDto): Promise<DetallePagos> {
 
+        const { pagos_id, padre_id, monto, canal_pago } = createDetalleDto;
+
+        // 1️⃣ Buscar el pago
         const pago = await this.pagosRepository.findOne({
-            where: { pagos_id: id },
-            relations: ['estudiante', 'aula', 'matricula', 'pagador'],
+            where: { pagos_id },
+            relations: ['matricula']
         });
 
         if (!pago) {
             throw new NotFoundException('Pago no encontrado');
         }
 
-        const {
-            estudiante_id,
-            aula_id,
-            matricula_id,
-            padre_id,
-            ...datosPago
-        } = updatePagosDto;
+        // 🔥 VALIDACIÓN IMPORTANTE
+        const deudaPendiente = Number(pago.monto_total) - Number(pago.monto_pagado);
 
-        Object.assign(pago, datosPago);
-
-        if (estudiante_id) {
-            const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
-            if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
-            pago.estudiante = estudiante;
+        if (monto <= 0) {
+            throw new BadRequestException('El monto debe ser mayor a 0');
         }
 
-        if (aula_id) {
-            const aula = await this.aulaRepository.findOneBy({ aula_id });
-            if (!aula) throw new NotFoundException('Aula no encontrada');
-            pago.aula = aula;
+        if (Number(monto) > deudaPendiente) {
+            throw new BadRequestException('El monto excede la deuda pendiente');
         }
 
-        if (padre_id) {
-            const padre = await this.padreRepository.findOneBy({ padre_id });
-            if (!padre) throw new NotFoundException('Padre no encontrado');
-            pago.pagador = padre;
+        // 2️⃣ Buscar el padre
+        const padre = await this.padreRepository.findOne({
+            where: { padre_id }
+        });
+
+        if (!padre) {
+            throw new NotFoundException('Padre no encontrado');
         }
 
-        return await this.pagosRepository.save(pago);
+        // 3️⃣ Crear detalle
+        const detalle = this.detalleRepository.create({
+            pago,
+            pagador: padre,
+            canal_pago,
+            monto
+        });
+
+        const detalleGuardado = await this.detalleRepository.save(detalle);
+
+        // 4️⃣ Actualizar monto_pagado
+        pago.monto_pagado = Number(pago.monto_pagado) + Number(monto);
+
+        // 5️⃣ Actualizar estado
+        pago.estado = pago.monto_pagado >= pago.monto_total
+            ? Estado_pago.PAGADO
+            : Estado_pago.DEUDA;
+
+        await this.pagosRepository.save(pago);
+
+        return detalleGuardado;
+    }
+    
+    //Obtener un detalle por pago
+
+    async findOneDetalle(id: number): Promise<DetallePagos> {
+        const detalle = await this.detalleRepository.findOne
+            ({
+                where: {detalle_id: id},
+                relations: {
+                    pagador: true,
+                    pago: true
+                }
+            })
+        if (!detalle) {throw new NotFoundException ('Detalle no encontrado')}
+        return detalle
     }
 
     //Obtener un pago por id
@@ -128,10 +145,11 @@ export class PagosService {
             ({
                 where: { pagos_id: id },
                 relations: {
-                    estudiante: true,
-                    aula: true,
-                    matricula: true,
-                    pagador: true,
+                    matricula: {
+                        estudiante: true,
+                        aula: true,
+                    },
+                    // pagador: true,
                 }
             })
         if (!pago) { throw new NotFoundException('Pago no encontrado') }

@@ -1,6 +1,5 @@
-export enum TipoPagador {
-    PADRE = 'Padre',
-    MADRE = 'Madre',
-    TUTOR = 'Tutor',
-    APODERADO = 'Apoderado'
-}
+// export enum TipoPagador {
+//     PADRE = 'Padre',
+//     MADRE = 'Madre',
+//     APODERADO = 'Apoderado'
+// }
