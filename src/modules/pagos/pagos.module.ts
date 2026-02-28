@@ -11,10 +11,11 @@ import { AulasModule } from '../aulas/aulas.module';
 import { EstudiantesModule } from '../estudiantes/estudiantes.module';
 import { Pagos } from './entities/pagos.entity';
 import { MatriculasModule } from '../matriculas/matriculas.module';
+import { DetallePagos } from './entities/detalle-pagos.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Pagos, Matricula, Estudiante, Aula, Padre]),
+    TypeOrmModule.forFeature([Pagos, Matricula, Estudiante, Aula, Padre, DetallePagos]),
     MatriculasModule,
     PadresModule,
     AulasModule,

@@ -8,6 +8,7 @@ import { EstadoMatricula } from './constants/estado-matricula.enum';
 import { Estudiante } from '../estudiantes/entities/estudiante.entity';
 import { Aula } from '../aulas/entities/aula.entity';
 import { Padre } from '../padres/entities/padre.entity';
+import { TipoRelacion } from '../padres/constants/tipo-relacion.enum';
 
 @Injectable()
 export class MatriculasService {
@@ -121,7 +122,7 @@ export class MatriculasService {
     } = updateMatriculaDto;
 
     Object.assign(matricula, datosMatricula);
-    
+
     if (estudiante_id) {
       const estudiante = await this.estudianteRepository.findOneBy({ estudiante_id });
       if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
@@ -166,4 +167,44 @@ export class MatriculasService {
     matricula.estado = estado;
     return await this.matriculaRepository.save(matricula)
   }
+
+  //Obtener matricula por codigo
+  async findByCodigo(codigo: string) {
+    const matricula = await this.matriculaRepository
+      .createQueryBuilder('matricula')
+      .leftJoinAndSelect('matricula.estudiante', 'estudiante')
+      .leftJoinAndSelect('matricula.aula', 'aula')
+      .leftJoinAndSelect('matricula.padre_responsable', 'padreResponsable')
+      .leftJoinAndSelect('estudiante.padres', 'padres') 
+      .where('matricula.codigo_matricula = :codigo', { codigo })
+      .getOne();
+
+    if (!matricula) {
+      throw new NotFoundException('Matrícula no encontrada');
+    }
+
+    return {
+      matricula_id: matricula.matricula_id, // 👈 ESTA LÍNEA ES LA CLAVE
+
+      codigo_matricula: matricula.codigo_matricula,
+
+      estudiante: `${matricula.estudiante.nombres} ${matricula.estudiante.apellido_paterno} ${matricula.estudiante.apellido_materno}`,
+
+      aulaNombre : `${matricula.aula.nivel} ${matricula.aula.grado} ${matricula.aula.seccion}`,
+
+      padres: matricula.estudiante.padres?.map(p => ({
+        padre_id: p.padre_id,
+        TipoRelacion: p.tipo_relacion,
+        nombre_completo: `${p.nombres} ${p.apellido_paterno} ${p.apellido_materno}`
+      })) || [],
+
+      padre_responsable: `${matricula.padre_responsable.nombres} ${matricula.padre_responsable.apellido_paterno} ${matricula.padre_responsable.apellido_materno}`,
+
+      inscripcion: matricula.inscripcion,
+      matricula: matricula.matricula,
+      mensualidad: matricula.mensualidad,
+    };
+  }
+
+
 }
