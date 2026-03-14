@@ -49,7 +49,7 @@ export class Padre {
     @Column({
         type: 'varchar',
         length: 100,
-        nullable: false,
+        nullable: true,
     })
     telefono: string;
 

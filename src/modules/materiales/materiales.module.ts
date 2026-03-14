@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Material } from './entities/material.entity';
 import { MaterialAula } from './entities/material-aula.entity';
 import { MaterialEstudiante } from './entities/material-estudiante.entity';
+import { Aula } from '../aulas/entities/aula.entity';
+import { Estudiante } from '../estudiantes/entities/estudiante.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ Material, MaterialAula, MaterialEstudiante ]),
+    TypeOrmModule.forFeature([Material, MaterialAula, MaterialEstudiante, Aula, Estudiante]),
   ],
   controllers: [MaterialesController],
   providers: [MaterialesService],
 })
-export class MaterialesModule {}
+export class MaterialesModule { }

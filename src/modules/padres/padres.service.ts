@@ -3,7 +3,7 @@ import { CreatePadreDto } from './dto/create-padre.dto';
 import { UpdatePadreDto } from './dto/update-padre.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Padre } from './entities/padre.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Estudiante } from '../estudiantes/entities/estudiante.entity';
 import { EstudiantePadre } from '../estudiantes/entities/estudiante-padre.entity';
@@ -32,20 +32,22 @@ export class PadresService {
       throw new ConflictException(`Padre con dni ${createPadreDto.dni} existente`);
     }
 
-    const padreexistetelefono = await this.padreRepository.findOne({
-      where: { telefono: createPadreDto.telefono }
-    });
-
-    if (padreexistetelefono) {
-      throw new ConflictException(`Padre con telefono ${createPadreDto.telefono} existente`);
+    if (createPadreDto.telefono && createPadreDto.telefono.trim() !== '') {
+      const padreexistetelefono = await this.padreRepository.findOne({
+        where: { telefono: createPadreDto.telefono }
+      });
+      if (padreexistetelefono) {
+        throw new ConflictException(`Padre con telefono ${createPadreDto.telefono} existente`);
+      }
     }
 
-    const padreexisteemail = await this.padreRepository.findOne({
-      where: { email: createPadreDto.email }
-    });
-
-    if (padreexisteemail) {
-      throw new ConflictException(`Padre con email ${createPadreDto.email} existente`);
+    if (createPadreDto.email && createPadreDto.email.trim() !== '') {
+      const padreexisteemail = await this.padreRepository.findOne({
+        where: { email: createPadreDto.email }
+      });
+      if (padreexisteemail) {
+        throw new ConflictException(`Padre con email ${createPadreDto.email} existente`);
+      }
     }
 
     const newPadre = this.padreRepository.create(createPadreDto);
@@ -130,9 +132,12 @@ export class PadresService {
 
   // ==================== MÉTODOS PARA ASIGNACIÓN DE ESTUDIANTES ====================
 
-  /**
-   * Buscar estudiante por DNI
-   */
+  async searchEstudiantesByDniPartial(dni: string): Promise<Estudiante[]> {
+    return await this.estudianteRepository.find({
+      where: { dni: Like(`%${dni}%`) },
+    });
+  }
+
   async findEstudianteByDni(dni: string): Promise<Estudiante> {
     const estudiante = await this.estudianteRepository.findOne({
       where: { dni }

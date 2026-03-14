@@ -33,17 +33,20 @@ export class CreatePadreDto {
     })
     dni: string;
 
+    @IsOptional()
     @IsString()
     @Matches(/^\d{9}$/, {
         message: 'El teléfono debe tener 9 dígitos'
     })
-    telefono: string;
+    telefono?: string;
 
+    @IsOptional()
     @IsEmail()
-    email: string;
+    email?: string;
 
+    @IsOptional()
     @IsString()
-    direccion: string;
+    direccion?: string;
 
     @IsEnum(TipoRelacion, {
         message: 'Tipo de relación inválido'

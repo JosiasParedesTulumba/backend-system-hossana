@@ -23,7 +23,7 @@ export class InformacionMedica {
         length: 50,
         nullable: true
     })
-    Gravedad: string;
+    gravedad: string;
 
     @Column({
         type: 'varchar',

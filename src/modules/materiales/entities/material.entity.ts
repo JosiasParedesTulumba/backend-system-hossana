@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { MaterialTipo } from "../constants/material-tipo.enum";
 import { MaterialAula } from "./material-aula.entity";
 import { MaterialEstudiante } from "./material-estudiante.entity";
@@ -19,9 +19,9 @@ export class Material {
         enumName: 'material_tipo_enum',
     })
     tipo: MaterialTipo;
-    
-    @Column({ type: 'varchar' })
-    cantidad_total: string;
+
+    @Column({ type: 'int' })
+    cantidad_total: number;
 
     @Column({
         type: 'varchar'
@@ -30,9 +30,16 @@ export class Material {
 
     @Column({
         type: 'timestamp',
-        default: () => 'CURRENT_TIMESTAMP'  
+        default: () => 'CURRENT_TIMESTAMP'
     })
     creado_en: Date;
+
+    @DeleteDateColumn({
+        type: 'timestamp',
+        nullable: true,
+        name: 'deleted_at' // Opcional: para mantener consistencia con snake_case
+    })
+    deletedAt: Date;
 
     @OneToMany(() => MaterialAula, materialAula => materialAula.material)
     material_aulas: MaterialAula[];
