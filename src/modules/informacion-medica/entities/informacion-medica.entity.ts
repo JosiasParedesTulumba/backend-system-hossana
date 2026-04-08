@@ -20,6 +20,13 @@ export class InformacionMedica {
 
     @Column({
         type: 'varchar',
+        length: 100,
+        nullable: true
+    })
+    tipo_condicion: string;
+
+    @Column({
+        type: 'varchar',
         length: 50,
         nullable: true
     })
@@ -27,7 +34,7 @@ export class InformacionMedica {
 
     @Column({
         type: 'varchar',
-        length: 255,
+        length: 500,
         nullable: true
     })
     descripcion: string;
