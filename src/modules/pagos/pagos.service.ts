@@ -12,6 +12,8 @@ import { Estado_pago } from './constants/estado.enum';
 import { DetallePagos } from './entities/detalle-pagos.entity';
 import { CreateDetallesPagosDto } from './dto/create-detalles-pagos';
 import { CanalPago } from './constants/canal-pago.enum';
+import { UpdateDetallesDto } from './dto/update-detalles.dto';
+import { Concepto } from './constants/concepto.enum';
 
 @Injectable()
 export class PagosService {
@@ -41,7 +43,7 @@ export class PagosService {
                 pagos_id: 'DESC'
             }
         })
-    }   
+    }
 
     //Crear un nuevo pago
     async createPagos(createPagosDto: CreatePagosDto): Promise<Pagos> {
@@ -56,6 +58,53 @@ export class PagosService {
             throw new NotFoundException('Matrícula no encontrada');
         }
 
+        // ===============================
+        // 🔴 VALIDAR INSCRIPCIÓN (UNA VEZ)
+        // ===============================
+        if (datosPago.concepto === Concepto.INSCRIPCION) {
+
+            const existe = await this.pagosRepository.findOne({
+                where: {
+                    concepto: Concepto.INSCRIPCION,
+                    matricula: { matricula_id }
+                },
+                relations: ['matricula']
+            });
+
+            if (existe) {
+                throw new BadRequestException('La inscripción ya existe para este estudiante');
+            }
+        }
+
+        // ===============================
+        // 🔵 VALIDAR MATRÍCULA (POR AÑO)
+        // ===============================
+        if (datosPago.concepto === Concepto.MATRICULA) {
+
+            const pagos = await this.pagosRepository.find({
+                where: {
+                    concepto: Concepto.MATRICULA,
+                    matricula: { matricula_id }
+                },
+                relations: ['detalles']
+            });
+
+            const añoActual = new Date().getFullYear();
+
+            const yaExiste = pagos.some(p =>
+                p.detalle_pagos?.some(d =>
+                    new Date(d.fecha_pago).getFullYear() === añoActual
+                )
+            );
+
+            if (yaExiste) {
+                throw new BadRequestException('La matrícula ya fue pagada este año');
+            }
+        }
+
+        // ===============================
+        // 🟢 CREAR PAGO
+        // ===============================
         const nuevoPago = this.pagosRepository.create({
             ...datosPago,
             matricula,
@@ -123,20 +172,161 @@ export class PagosService {
 
         return detalleGuardado;
     }
-    
-    //Obtener un detalle por pago
 
-    async findOneDetalle(id: number): Promise<DetallePagos> {
-        const detalle = await this.detalleRepository.findOne
-            ({
-                where: {detalle_id: id},
-                relations: {
-                    pagador: true,
-                    pago: true
+    //Obtener detalles de pago por id de pago
+    async findDetallesByPago(id: number): Promise<DetallePagos[]> {
+
+        const detalles = await this.detalleRepository.find({
+            where: {
+                pago: { pagos_id: id }
+            },
+            relations: {
+                pagador: true,
+                pago: {
+                    matricula: {
+                        estudiante: true,
+                        aula: true
+                    }
                 }
-            })
-        if (!detalle) {throw new NotFoundException ('Detalle no encontrado')}
-        return detalle
+            },
+            order: {
+                fecha_pago: 'DESC'
+            }
+        });
+
+        if (!detalles.length) {
+            throw new NotFoundException('No hay detalles de pago');
+        }
+
+        return detalles;
+    }
+
+    //Actualizar un pago (solo monto_pagado, el estado se actualiza automáticamente)
+    async update(id: number, updatePagosDto: UpdatePagosDto): Promise<Pagos> {
+
+        const pago = await this.pagosRepository.findOne({
+            where: { pagos_id: id }
+        });
+
+        if (!pago) {
+            throw new NotFoundException('Pago no encontrado');
+        }
+
+        // actualizar monto
+        if (updatePagosDto.monto_pagado !== undefined) {
+            pago.monto_pagado = Number(updatePagosDto.monto_pagado);
+        }
+
+        // 🔥 calcular estado AUTOMÁTICO
+        pago.estado = pago.monto_pagado >= pago.monto_total
+            ? Estado_pago.PAGADO
+            : Estado_pago.DEUDA;
+
+        return await this.pagosRepository.save(pago);
+    }
+
+
+    async updateDetalle(
+        detalle_id: number,
+        updateDetalleDto: UpdateDetallesDto
+    ): Promise<DetallePagos> {
+
+        const detalle = await this.detalleRepository.findOne({
+            where: { detalle_id },
+            relations: ['pago', 'pagador']
+        });
+
+        if (!detalle) {
+            throw new NotFoundException('Detalle no encontrado');
+        }
+
+        // 🚫 No permitir editar si ya está pagado
+        if (detalle.pago.estado === Estado_pago.PAGADO) {
+            throw new BadRequestException('No se puede editar un pago completado');
+        }
+
+        const pago = detalle.pago;
+
+        let huboCambios = false; // 👈 para controlar si actualizar fecha
+
+        // =========================
+        // 🔥 VALIDAR MONTO
+        // =========================
+        let nuevoMonto = detalle.monto;
+
+        if (updateDetalleDto.monto !== undefined) {
+
+            nuevoMonto = Number(updateDetalleDto.monto);
+
+            if (isNaN(nuevoMonto)) {
+                throw new BadRequestException('El monto debe ser un número válido');
+            }
+
+            if (nuevoMonto <= 0) {
+                throw new BadRequestException('El monto debe ser mayor a 0');
+            }
+
+            // 🔄 Restar el monto anterior
+            pago.monto_pagado = Number(pago.monto_pagado) - Number(detalle.monto);
+
+            const deudaPendiente = Number(pago.monto_total) - Number(pago.monto_pagado);
+
+            if (nuevoMonto > deudaPendiente) {
+                throw new BadRequestException('El monto excede la deuda pendiente');
+            }
+
+            detalle.monto = nuevoMonto;
+
+            // 🔄 Volver a sumar
+            pago.monto_pagado = Number(pago.monto_pagado) + nuevoMonto;
+
+            huboCambios = true;
+        }
+
+        // =========================
+        // 🔥 ACTUALIZAR CANAL
+        // =========================
+        if (updateDetalleDto.canal_pago !== undefined) {
+            detalle.canal_pago = updateDetalleDto.canal_pago;
+            huboCambios = true;
+        }
+
+        // =========================
+        // 🔥 ACTUALIZAR PADRE
+        // =========================
+        if (updateDetalleDto.padre_id !== undefined) {
+
+            const padre = await this.padreRepository.findOne({
+                where: { padre_id: updateDetalleDto.padre_id }
+            });
+
+            if (!padre) {
+                throw new NotFoundException('Padre no encontrado');
+            }
+
+            detalle.pagador = padre;
+            huboCambios = true;
+        }
+
+        // =========================
+        // 🕒 ACTUALIZAR FECHA (🔥 CLAVE)
+        // =========================
+        if (huboCambios) {
+            detalle.fecha_pago = new Date().toISOString(); // 👈 AQUÍ
+        }
+
+        await this.detalleRepository.save(detalle);
+
+        // =========================
+        // 🔄 ACTUALIZAR ESTADO
+        // =========================
+        pago.estado = pago.monto_pagado >= pago.monto_total
+            ? Estado_pago.PAGADO
+            : Estado_pago.DEUDA;
+
+        await this.pagosRepository.save(pago);
+
+        return detalle;
     }
 
     //Obtener un pago por id
@@ -169,20 +359,42 @@ export class PagosService {
         return pago;
     }
 
-    //eliminar pago
-    // async remove(id: number): Promise<{ message: string; pago: Pagos }> {
-    //     const pago = await this.pagosRepository.findOne({
-    //         where: { pagos_id: id },
-    //     });
+    async removeDetalle(id: number): Promise<DetallePagos> {
 
-    //     if (!pago) {
-    //         throw new NotFoundException('Pago no encontrado');
-    //     }
-    //     await this.pagosRepository.remove(pago);
-    //     return {
-    //         message: 'Pago eliminado correctamente',
-    //         pago: pago
-    //     };
-    // }
+        const detalle = await this.detalleRepository.findOne({
+            where: { detalle_id: id },
+            relations: ['pago']
+        });
+
+        if (!detalle) {
+            throw new NotFoundException('Detalle de pago no encontrado');
+        }
+
+        const pago = detalle.pago;
+
+        // 🔥 ELIMINAR PRIMERO
+        await this.detalleRepository.remove(detalle);
+
+        // 🔥 RECALCULAR TOTAL
+        const detalles = await this.detalleRepository.find({
+            where: { pago: { pagos_id: pago.pagos_id } }
+        });
+
+        const totalPagado = detalles.reduce(
+            (sum, d) => sum + Number(d.monto),
+            0
+        );
+
+        pago.monto_pagado = Number(totalPagado.toFixed(2));
+
+        // 🔥 ACTUALIZAR ESTADO
+        pago.estado = totalPagado >= Number(pago.monto_total)
+            ? Estado_pago.PAGADO
+            : Estado_pago.DEUDA;
+
+        await this.pagosRepository.save(pago);
+
+        return detalle;
+    }
 
 }

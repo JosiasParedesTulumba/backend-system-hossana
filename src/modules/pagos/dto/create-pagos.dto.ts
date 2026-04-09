@@ -28,10 +28,9 @@ export class CreatePagosDto {
     @Min(0, { message: 'El monto total no puede ser negativo' })
     monto_total: number;
 
-    // @Type(() => Number)
-    // // @IsNotEmpty({ message: 'El monto pagado es obligatorio' })
-    // @IsNumber({}, { message: 'El monto pagado debe ser un número válido' })
-    // @Min(0, { message: 'El monto pagado no puede ser negativo' })
-    // monto_pagado: number;
+    @Type(() => Number)
+    @IsNumber({}, { message: 'El monto pagado debe ser un número válido' })
+    @Min(0, { message: 'El monto pagado no puede ser negativo' })
+    monto_pagado: number;
 
 }

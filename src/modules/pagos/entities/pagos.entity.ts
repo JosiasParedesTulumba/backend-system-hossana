@@ -13,7 +13,7 @@ import { DetallePagos } from "./detalle-pagos.entity";
 @Entity('pagos')
 export class Pagos {
     @PrimaryGeneratedColumn()
-    pagos_id: number;
+    pagos_id: number ;
 
     // Relaciones
 
@@ -62,7 +62,10 @@ export class Pagos {
 
     // Relacion con detalle de pagos
 
-    @OneToMany(() => DetallePagos, detallePagos => detallePagos.pago)
+    @OneToMany(() => DetallePagos, detallePagos => detallePagos.pago, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
     detalle_pagos: DetallePagos[];
 
 

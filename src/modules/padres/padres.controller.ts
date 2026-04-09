@@ -21,6 +21,11 @@ export class PadresController {
     return this.padresService.findAll(paginationDTO);
   }
 
+  @Get('estudiante/:id')
+  getPadresByEstudiante(@Param('id') id: number) {
+    return this.padresService.getPadresByEstudiante(id);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number) {
     return this.padresService.findOne(id);

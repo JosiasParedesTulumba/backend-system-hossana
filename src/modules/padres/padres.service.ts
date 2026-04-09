@@ -22,6 +22,28 @@ export class PadresService {
     private readonly estudiantePadreRepository: Repository<EstudiantePadre>
   ) { }
 
+  /**
+ * Obtener padres de un estudiante
+ */
+  async getPadresByEstudiante(estudiante_id: number) {
+
+    const padres = await this.padreRepository.find({
+      where: { estudiante: { estudiante_id } },
+    });
+
+    return padres.map(p => ({
+      padre_id: p.padre_id,
+      nombres: p.nombres,
+      apellido_paterno: p.apellido_paterno,
+      apellido_materno: p.apellido_materno,
+      nombre_completo: `${p.nombres} ${p.apellido_paterno} ${p.apellido_materno}`,
+      telefono: p.telefono,
+      email: p.email,
+      tipo_relacion: p.tipo_relacion
+    }));
+
+  }
+
   async create(createPadreDto: CreatePadreDto): Promise<Padre> {
 
     const padreexistentedni = await this.padreRepository.findOne({

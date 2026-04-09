@@ -8,6 +8,8 @@ import { CreatePagosDto } from './dto/create-pagos.dto';
 import { UpdatePagosDto } from './dto/update-pagos.dto';
 import { NivelEducativo } from '../aulas/constants/nivel-educativo.enum';
 import { CreateDetallesPagosDto } from './dto/create-detalles-pagos';
+import { UpdateDetallesDto } from './dto/update-detalles.dto';
+import { DetallePagos } from './entities/detalle-pagos.entity';
 
 @Controller('pagos')
 export class PagosController {
@@ -22,6 +24,11 @@ export class PagosController {
     @Get()
     findAll() {
         return this.pagosService.findAll();
+    }
+
+    @Get('detalle/pago/:id')
+    findOneDetalle(@Param('id') id: string) {
+        return this.pagosService.findDetallesByPago(+id)
     }
 
     @Get('estudiante/:id')
@@ -39,6 +46,11 @@ export class PagosController {
     @Get('matricula/:codigo')
     findByCodigo(@Param('codigo') codigo: string) {
         return this.matriculasService.findByCodigo(codigo);
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.pagosService.findOne(+id)
     }
 
     @Post()
@@ -64,21 +76,30 @@ export class PagosController {
     //     return this.pagosService.create(createPagosDto)
     // }
 
-    // @Patch(':id')
-    // update(
-    //     @Param('id') id: string,
-    //     @Body() updatePagosDto: UpdatePagosDto
-    // ) {
-    //     return this.pagosService.update(+id, updatePagosDto)
-    // }
+    @Patch(':id')
+    update(
+        @Param('id') id: string,
+        @Body() updatePagosDto: UpdatePagosDto
+    ) {
+        return this.pagosService.update(+id, updatePagosDto)
+    }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.pagosService.findOne(+id)
+    @Patch('detalle/:id')
+    async updateDetalle(
+        @Param('id') id: number,
+        @Body() updateDetalleDto: UpdateDetallesDto
+    ): Promise<DetallePagos> {
+        return this.pagosService.updateDetalle(+id, updateDetalleDto);
     }
 
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.pagosService.remove(+id)
     }
+
+    @Delete('detalle/:id')
+    removeDetalle(@Param('id') id: string) {
+        return this.pagosService.removeDetalle(+id)
+    }
+
 }
