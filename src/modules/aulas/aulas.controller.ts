@@ -6,7 +6,7 @@ import { UpdateAulaDto } from './dto/update-aula.dto';
 @Controller('aulas')
 export class AulasController {
 
-  constructor(private readonly aulasService: AulasService) {}
+  constructor(private readonly aulasService: AulasService) { }
 
   @Post()
   async create(@Body() createAulaDto: CreateAulaDto) {
