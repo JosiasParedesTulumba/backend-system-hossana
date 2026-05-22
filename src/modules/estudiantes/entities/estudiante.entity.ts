@@ -15,35 +15,35 @@ import { Padre } from "src/modules/padres/entities/padre.entity";
 export class Estudiante {
 
     @PrimaryGeneratedColumn()
-    estudiante_id: number;
+    estudiante_id!: number;
 
     @Column({
         type: 'varchar',
         length: 20,
         unique: true
     })
-    dni: string;
+    dni!: string;
 
     @Column({
         type: 'varchar',
         length: 200,
         nullable: false
     })
-    nombres: string;
+    nombres!: string;
 
     @Column({
         type: 'varchar',
         length: 200,
         nullable: false
     })
-    apellido_paterno: string;
+    apellido_paterno!: string;
 
     @Column({
         type: 'varchar',
         length: 200,
         nullable: false
     })
-    apellido_materno: string;
+    apellido_materno!: string;
 
     @Column({
         type: 'enum',
@@ -51,10 +51,10 @@ export class Estudiante {
         enumName: 'Genero',
         nullable: false
     })
-    genero: Genero;
+    genero!: Genero;
 
     @Column({ name: 'fecha_nacimiento', type: 'date' })
-    fecha_nacimiento: string;
+    fecha_nacimiento!: string;
 
     @Column({
         type: 'enum',
@@ -62,7 +62,7 @@ export class Estudiante {
         enumName: 'Estado',
         default: Estado.ACTIVO
     })
-    estado: Estado;
+    estado!: Estado;
 
 
     // @Column({ type: 'text' })
@@ -82,22 +82,22 @@ export class Estudiante {
     // deletedAt: Date;
 
     @OneToMany(() => MaterialEstudiante, materialEstudiante => materialEstudiante.estudiante)
-    material_estudiantes: MaterialEstudiante[];
+    material_estudiantes!: MaterialEstudiante[];
 
     @OneToMany(() => Prestamo, prestamo => prestamo.estudiante)
-    prestamo: Prestamo[];
+    prestamo!: Prestamo[];
 
     //Relacion con padres
 
     @OneToMany(() => Padre, padre => padre.estudiante)
-    padres: Padre[];
+    padres!: Padre[];
 
     @OneToMany(() => Matricula, matricula => matricula.estudiante)
-    matricula: Matricula[];
+    matricula!: Matricula[];
 
     @OneToOne(() => InformacionMedica, informacionMedica => informacionMedica.estudiante)
-    informacion_medica: InformacionMedica[];
+    informacion_medica!: InformacionMedica[];
 
     @OneToMany(() => EstudiantePadre, estudiantePadre => estudiantePadre.estudiante)
-    estudiante_padres: EstudiantePadre[];
+    estudiante_padres!: EstudiantePadre[];
 }

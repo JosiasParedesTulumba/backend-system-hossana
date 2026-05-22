@@ -10,21 +10,20 @@ export class Prestamo {
     @PrimaryGeneratedColumn()
     prestamo_id: number;
 
-    @ManyToOne(() => Material, material => material.prestamos, { 
-        onDelete: 'CASCADE' 
-    }) 
+    @ManyToOne(() => Material, material => material.prestamos, { onDelete: 'CASCADE' })
     material: Material;
 
-    @ManyToOne(() =>  Estudiante, estudiante => estudiante.prestamo)
+    @ManyToOne(() => Estudiante, estudiante => estudiante.prestamo)
     @JoinColumn({ name: 'estudiante_id' })
     estudiante: Estudiante;
 
-    @ManyToOne(() => Aula, aula => aula.prestamos ,{
-        nullable: false,
-        onDelete: 'CASCADE'
-    })
-    @JoinColumn({ name: 'aula_id' })
-    aula: Aula;
+    @ManyToOne(() => Aula, aula => aula.prestamosOrigen, { nullable: false, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'aula_origen_id' })
+    aula_origen: Aula;
+
+    @ManyToOne(() => Aula, { nullable: false, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'aula_destino_id' })
+    aula_destino: Aula;
 
     @Column()
     cantidad: number;
@@ -33,13 +32,11 @@ export class Prestamo {
     fecha_prestamo: Date;
 
     @Column({ type: 'timestamp', nullable: true })
-    fecha_devolucion: Date;
+    fecha_devolucion: Date | null;
 
-    @Column({
-        type: 'enum',
-        enum: EstadoPrestamo,
-        default: EstadoPrestamo.ACTIVO
-    })
+    @Column({ type: 'timestamp', nullable: true })
+    fecha_devolucion_esperada: Date | null;   
+
+    @Column({ type: 'enum', enum: EstadoPrestamo, default: EstadoPrestamo.ACTIVO })
     estado: EstadoPrestamo;
-
 }

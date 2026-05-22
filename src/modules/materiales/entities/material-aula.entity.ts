@@ -6,16 +6,16 @@ import { Aula } from "src/modules/aulas/entities/aula.entity";
 export class MaterialAula {
 
     @PrimaryGeneratedColumn()
-    material_aula_id: number;
+    material_aula_id!: number;
 
     @ManyToOne(() => Material, material => material.material_aulas)
     @JoinColumn({ name: 'material_id' })
-    material: Material;
+    material!: Material;
 
     @ManyToOne(() => Aula, aula => aula.material_aulas)
     @JoinColumn({ name: 'aula_id' })
-    aula: Aula;
+    aula!: Aula;
 
     @Column({ type: 'int', nullable: false })
-    cantidad_asignada: number;
+    cantidad_asignada!: number;
 }

@@ -9,7 +9,7 @@ import { Pagos } from "src/modules/pagos/entities/pagos.entity";
 export class Aula {
 
     @PrimaryGeneratedColumn()
-    aula_id: number;
+    aula_id!: number;
 
     @Column({
         type: 'enum',
@@ -17,19 +17,19 @@ export class Aula {
         enumName: 'nivel_educativo',
         nullable: false
     })
-    nivel: NivelEducativo;
+    nivel!: NivelEducativo;
 
     @Column({
         type: 'varchar',
         length: 50,
     })
-    grado: string;
+    grado!: string;
 
     @Column({
         type: 'varchar',
         length: 50,
     })
-    seccion: string;
+    seccion!: string;
 
     // @Column({
     //     type: 'varchar',
@@ -38,11 +38,16 @@ export class Aula {
     // nombre_personalizado:string;
 
     @OneToMany(() => MaterialAula, materialAula => materialAula.aula)
-    material_aulas: MaterialAula[];
+    material_aulas!: MaterialAula[];
     
-    @OneToMany(() => Prestamo, prestamo => prestamo.aula)
-    prestamos: Prestamo[];
+    // Corregido: usa 'aula_origen' en lugar de 'aula'
+    @OneToMany(() => Prestamo, prestamo => prestamo.aula_origen)
+    prestamosOrigen!: Prestamo[];
+
+    // Opcional: si también quieres obtener los préstamos donde el aula es destino
+    @OneToMany(() => Prestamo, prestamo => prestamo.aula_destino)
+    prestamosDestino!: Prestamo[];
 
     @OneToMany(() => Matricula, matricula => matricula.aula)
-    matricula: Matricula;
+    matricula!: Matricula;
 }
